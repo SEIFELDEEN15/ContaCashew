@@ -4,17 +4,23 @@ import 'package:budget/functions.dart';
 import 'package:budget/pages/addInvestmentPage.dart';
 import 'package:budget/pages/transactionFilters.dart';
 import 'package:budget/struct/databaseGlobal.dart';
+import 'package:budget/struct/investmentTypes.dart';
 import 'package:budget/struct/settings.dart';
+import 'package:budget/struct/spendingSummaryHelper.dart';
 import 'package:budget/widgets/fab.dart';
 import 'package:budget/widgets/fadeIn.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
 import 'package:budget/widgets/investmentEntry.dart';
+import 'package:budget/widgets/lineGraph.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openPopup.dart';
+import 'package:budget/widgets/pieChart.dart';
+import 'package:budget/widgets/textWidgets.dart';
 import 'package:budget/widgets/transactionsAmountBox.dart';
 import 'package:budget/widgets/walletEntry.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:budget/widgets/util/keepAliveClientMixin.dart';
 import 'package:provider/provider.dart';
@@ -163,6 +169,222 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
             ),
           ),
 
+          // Aggregated Portfolio Chart
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: getHorizontalPaddingConstrained(context),
+                vertical: 10,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFont(
+                    text: "portfolio-performance".tr(),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  SizedBox(height: 10),
+                  StreamBuilder<List<Investment>>(
+                    stream: database.watchAllInvestments(hideArchived: true),
+                    builder: (context, investmentsSnapshot) {
+                      if (!investmentsSnapshot.hasData ||
+                          investmentsSnapshot.data!.isEmpty) {
+                        return Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: getColor(context, "lightDarkAccentHeavyLight"),
+                            borderRadius: BorderRadius.circular(
+                              getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                            ),
+                          ),
+                          child: Center(
+                            child: TextFont(
+                              text: "no-investment-data".tr(),
+                              textColor: getColor(context, "textLight"),
+                            ),
+                          ),
+                        );
+                      }
+
+                      // Calculate total portfolio value over time
+                      // For simplicity, we'll show current vs purchase value
+                      final investments = investmentsSnapshot.data!;
+                      final totalCurrent = investments.fold<double>(
+                        0,
+                        (sum, inv) => sum + (inv.shares * inv.currentPrice),
+                      );
+                      final totalInitial = investments.fold<double>(
+                        0,
+                        (sum, inv) => sum + (inv.shares * inv.purchasePrice),
+                      );
+
+                      return Container(
+                        height: 200,
+                        padding: EdgeInsetsDirectional.all(15),
+                        decoration: BoxDecoration(
+                          color: getColor(context, "lightDarkAccentHeavyLight"),
+                          borderRadius: BorderRadius.circular(
+                            getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                          ),
+                        ),
+                        child: LineChart(
+                          LineChartData(
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                              getDrawingHorizontalLine: (value) {
+                                return FlLine(
+                                  color: getColor(context, "textLight")
+                                      .withOpacity(0.1),
+                                  strokeWidth: 1,
+                                );
+                              },
+                            ),
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              topTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                            borderData: FlBorderData(show: false),
+                            lineBarsData: [
+                              LineChartBarData(
+                                spots: [
+                                  FlSpot(0, totalInitial),
+                                  FlSpot(1, totalCurrent),
+                                ],
+                                isCurved: true,
+                                color: totalCurrent >= totalInitial
+                                    ? getColor(context, "incomeAmount")
+                                    : getColor(context, "expenseAmount"),
+                                barWidth: 3,
+                                isStrokeCapRound: true,
+                                dotData: FlDotData(show: true),
+                                belowBarData: BarAreaData(
+                                  show: true,
+                                  color: (totalCurrent >= totalInitial
+                                          ? getColor(context, "incomeAmount")
+                                          : getColor(context, "expenseAmount"))
+                                      .withOpacity(0.1),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Category Breakdown Pie Chart
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: getHorizontalPaddingConstrained(context),
+                vertical: 10,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFont(
+                    text: "category-breakdown".tr(),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  SizedBox(height: 10),
+                  StreamBuilder<List<Investment>>(
+                    stream: database.watchAllInvestments(hideArchived: true),
+                    builder: (context, investmentsSnapshot) {
+                      if (!investmentsSnapshot.hasData ||
+                          investmentsSnapshot.data!.isEmpty) {
+                        return Container(
+                          height: 250,
+                          decoration: BoxDecoration(
+                            color: getColor(context, "lightDarkAccentHeavyLight"),
+                            borderRadius: BorderRadius.circular(
+                              getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                            ),
+                          ),
+                          child: Center(
+                            child: TextFont(
+                              text: "no-investment-data".tr(),
+                              textColor: getColor(context, "textLight"),
+                            ),
+                          ),
+                        );
+                      }
+
+                      // Group by investment type
+                      final investments = investmentsSnapshot.data!;
+                      final Map<String?, double> typeTotals = {};
+
+                      for (var inv in investments) {
+                        final value = inv.shares * inv.currentPrice;
+                        typeTotals[inv.investmentType] =
+                            (typeTotals[inv.investmentType] ?? 0) + value;
+                      }
+
+                      if (typeTotals.isEmpty) {
+                        return SizedBox.shrink();
+                      }
+
+                      final total = typeTotals.values.fold<double>(0, (a, b) => a + b);
+
+                      return Container(
+                        height: 250,
+                        padding: EdgeInsetsDirectional.all(15),
+                        decoration: BoxDecoration(
+                          color: getColor(context, "lightDarkAccentHeavyLight"),
+                          borderRadius: BorderRadius.circular(
+                            getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                          ),
+                        ),
+                        child: PieChartWrapper(
+                          pieChartDisplayStateKey: null,
+                          totalSpent: total,
+                          data: typeTotals.entries
+                              .map((e) => CategoryWithTotal(
+                                    category: TransactionCategory(
+                                      categoryPk: e.key ?? "other",
+                                      name: getInvestmentTypeName(e.key),
+                                      colour: "#" + getInvestmentTypeColor(e.key)
+                                          .value
+                                          .toRadixString(16)
+                                          .padLeft(8, '0')
+                                          .substring(2),
+                                      iconName: null,
+                                      dateCreated: DateTime.now(),
+                                      dateTimeModified: null,
+                                      order: 0,
+                                      income: false,
+                                    ),
+                                    total: e.value,
+                                  ))
+                              .toList(),
+                          setSelectedCategory: (categoryPk, category) {
+                            // Optional: handle category selection
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           // Wallets Section (as investments)
           SliverToBoxAdapter(
             child: Padding(
@@ -170,12 +392,10 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
                 horizontal: getHorizontalPaddingConstrained(context),
                 vertical: 10,
               ),
-              child: Text(
-                "accounts".tr(),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: TextFont(
+                text: "accounts".tr(),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

@@ -3,8 +3,14 @@ import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addInvestmentPage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
+import 'package:budget/struct/investmentTypes.dart';
+import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
+import 'package:budget/widgets/lineGraph.dart';
+import 'package:budget/widgets/openBottomSheet.dart';
+import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -31,13 +37,18 @@ class InvestmentPage extends StatelessWidget {
         final gainLoss = currentValue - initialValue;
         final gainLossPercentage =
             initialValue > 0 ? (gainLoss / initialValue) * 100 : 0;
+        final isGain = gainLoss >= 0;
 
         return PageFramework(
           title: investment.name,
           dragDownToDismiss: true,
           actions: [
             IconButton(
-              icon: Icon(Icons.edit),
+              icon: Icon(
+                appStateSettings["outlinedIcons"]
+                    ? Icons.edit_outlined
+                    : Icons.edit_rounded,
+              ),
               onPressed: () {
                 pushRoute(
                   context,
@@ -49,44 +60,44 @@ class InvestmentPage extends StatelessWidget {
             ),
           ],
           slivers: [
-            // Header
+            // Header with icon
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: getHorizontalPaddingConstrained(context),
+                  vertical: 15,
+                ),
                 child: Row(
                   children: [
                     Container(
-                      width: 80,
-                      height: 80,
+                      width: 70,
+                      height: 70,
                       decoration: BoxDecoration(
-                        color: HexColor(investment.colour ?? "#4CAF50"),
-                        borderRadius: BorderRadius.circular(20),
+                        color: getInvestmentTypeColor(investment.investmentType),
+                        borderRadius: BorderRadius.circular(15),
                       ),
                       child: Icon(
-                        getIconFromName(investment.iconName),
+                        getInvestmentTypeIcon(investment.investmentType),
                         color: Colors.white,
-                        size: 40,
+                        size: 35,
                       ),
                     ),
-                    SizedBox(width: 16),
+                    SizedBox(width: 15),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            investment.name,
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          TextFont(
+                            text: investment.name,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            maxLines: 2,
                           ),
                           if (investment.symbol != null)
-                            Text(
-                              investment.symbol!,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
+                            TextFont(
+                              text: investment.symbol!,
+                              fontSize: 16,
+                              textColor: getColor(context, "textLight"),
                             ),
                         ],
                       ),
@@ -96,101 +107,184 @@ class InvestmentPage extends StatelessWidget {
               ),
             ),
 
-            // Current Value
+            // Current Value Card
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Text(
-                      "current-value".tr(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: getHorizontalPaddingConstrained(context),
+                  vertical: 5,
+                ),
+                child: Container(
+                  padding: EdgeInsetsDirectional.all(20),
+                  decoration: BoxDecoration(
+                    color: getColor(context, "lightDarkAccentHeavyLight"),
+                    borderRadius: BorderRadius.circular(
+                      getPlatform() == PlatformOS.isIOS ? 0 : 15,
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      convertToMoney(
-                        Provider.of<AllWallets>(context),
-                        currentValue,
+                  ),
+                  child: Column(
+                    children: [
+                      TextFont(
+                        text: "current-value".tr(),
+                        fontSize: 14,
+                        textColor: getColor(context, "textLight"),
                       ),
-                      style: TextStyle(
+                      SizedBox(height: 8),
+                      TextFont(
+                        text: convertToMoney(
+                          Provider.of<AllWallets>(context),
+                          currentValue,
+                        ),
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                       ),
-                    ),
-                    SizedBox(height: 16),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: gainLoss >= 0
-                            ? Colors.green.withOpacity(0.1)
-                            : Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            gainLoss >= 0
-                                ? Icons.trending_up
-                                : Icons.trending_down,
-                            color: gainLoss >= 0
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)}",
-                            style: TextStyle(
+                      SizedBox(height: 16),
+                      Container(
+                        padding: EdgeInsetsDirectional.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isGain
+                              ? getColor(context, "incomeAmount").withOpacity(0.15)
+                              : getColor(context, "expenseAmount").withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isGain
+                                  ? appStateSettings["outlinedIcons"]
+                                      ? Icons.trending_up_outlined
+                                      : Icons.trending_up_rounded
+                                  : appStateSettings["outlinedIcons"]
+                                      ? Icons.trending_down_outlined
+                                      : Icons.trending_down_rounded,
+                              color: isGain
+                                  ? getColor(context, "incomeAmount")
+                                  : getColor(context, "expenseAmount"),
+                            ),
+                            SizedBox(width: 8),
+                            TextFont(
+                              text: (isGain ? "+" : "") +
+                                  convertToMoney(
+                                    Provider.of<AllWallets>(context),
+                                    gainLoss,
+                                  ),
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: gainLoss >= 0
-                                  ? Colors.green
-                                  : Colors.red,
+                              textColor: isGain
+                                  ? getColor(context, "incomeAmount")
+                                  : getColor(context, "expenseAmount"),
                             ),
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            "(${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
-                            style: TextStyle(
+                            SizedBox(width: 8),
+                            TextFont(
+                              text: "(" +
+                                  (isGain ? "+" : "") +
+                                  gainLossPercentage.toStringAsFixed(2) +
+                                  "%)",
                               fontSize: 16,
-                              color: gainLoss >= 0
-                                  ? Colors.green
-                                  : Colors.red,
+                              textColor: isGain
+                                  ? getColor(context, "incomeAmount")
+                                  : getColor(context, "expenseAmount"),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
+
+            // Portfolio Percentage
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: getHorizontalPaddingConstrained(context),
+                  vertical: 5,
+                ),
+                child: StreamBuilder<Map<String, double>>(
+                  stream: database.watchPortfolioSummary(),
+                  builder: (context, portfolioSnapshot) {
+                    if (!portfolioSnapshot.hasData) {
+                      return SizedBox.shrink();
+                    }
+                    final totalPortfolio =
+                        portfolioSnapshot.data?['totalValue'] ?? 0;
+                    final percentage = totalPortfolio > 0
+                        ? (currentValue / totalPortfolio) * 100
+                        : 0;
+
+                    return Container(
+                      padding: EdgeInsetsDirectional.all(18),
+                      decoration: BoxDecoration(
+                        color: getColor(context, "lightDarkAccentHeavyLight"),
+                        borderRadius: BorderRadius.circular(
+                          getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextFont(
+                            text: "portfolio-weight".tr(),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          TextFont(
+                            text: percentage.toStringAsFixed(2) + "%",
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            textColor: Theme.of(context).colorScheme.primary,
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+
+            // Price History Chart - TODO: Implement watchPriceHistory in database
+            // SliverToBoxAdapter(
+            //   child: Padding(
+            //     padding: EdgeInsetsDirectional.symmetric(
+            //       horizontal: getHorizontalPaddingConstrained(context),
+            //       vertical: 10,
+            //     ),
+            //     child: TextFont(
+            //       text: "price-history-coming-soon".tr(),
+            //       fontSize: 14,
+            //       textColor: getColor(context, "textLight"),
+            //       textAlign: TextAlign.center,
+            //     ),
+            //   ),
+            // ),
 
             // Holdings Details
             SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: getHorizontalPaddingConstrained(context),
+                  vertical: 5,
+                ),
                 child: Container(
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsetsDirectional.all(18),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(15),
+                    color: getColor(context, "lightDarkAccentHeavyLight"),
+                    borderRadius: BorderRadius.circular(
+                      getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "holdings-details".tr(),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      TextFont(
+                        text: "holdings-details".tr(),
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
                       SizedBox(height: 16),
                       _buildDetailRow(
@@ -219,11 +313,26 @@ class InvestmentPage extends StatelessWidget {
                         "purchase-date".tr(),
                         getWordedDate(investment.purchaseDate),
                       ),
+                      if (investment.note != null) ...[
+                        Divider(height: 30),
+                        TextFont(
+                          text: "note".tr(),
+                          fontSize: 14,
+                          textColor: getColor(context, "textLight"),
+                        ),
+                        SizedBox(height: 5),
+                        TextFont(
+                          text: investment.note!,
+                          fontSize: 14,
+                        ),
+                      ],
                     ],
                   ),
                 ),
               ),
             ),
+
+            SliverToBoxAdapter(child: SizedBox(height: 20)),
           ],
         );
       },
@@ -232,23 +341,19 @@ class InvestmentPage extends StatelessWidget {
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 8),
+      padding: EdgeInsetsDirectional.symmetric(vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+          TextFont(
+            text: label,
+            fontSize: 14,
+            textColor: getColor(context, "textLight"),
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+          TextFont(
+            text: value,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ],
       ),

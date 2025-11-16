@@ -2,17 +2,25 @@ import 'package:budget/colors.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/struct/databaseGlobal.dart';
+import 'package:budget/struct/investmentTypes.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
+import 'package:budget/widgets/framework/popupFramework.dart';
+import 'package:budget/widgets/globalSnackbar.dart';
+import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/openPopup.dart';
-import 'package:budget/widgets/selectCategory.dart';
-import 'package:budget/widgets/textInput.dart';
+import 'package:budget/widgets/selectAmount.dart';
+import 'package:budget/widgets/selectChips.dart';
+import 'package:budget/widgets/textInput.dart' as BudgetTextInput;
+import 'package:budget/widgets/textWidgets.dart';
 import 'package:budget/widgets/tappable.dart';
+import 'package:budget/widgets/util/showDatePicker.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class AddInvestmentPage extends StatefulWidget {
@@ -30,14 +38,15 @@ class AddInvestmentPage extends StatefulWidget {
 class _AddInvestmentPageState extends State<AddInvestmentPage> {
   late TextEditingController _nameController;
   late TextEditingController _symbolController;
-  late TextEditingController _sharesController;
-  late TextEditingController _purchasePriceController;
-  late TextEditingController _currentPriceController;
   late TextEditingController _noteController;
+
+  double? _shares;
+  double? _purchasePrice;
+  double? _currentPrice;
 
   DateTime _purchaseDate = DateTime.now();
   String? _selectedWalletPk;
-  String? _selectedCategoryPk;
+  String? _selectedInvestmentType;
 
   bool _isEditing = false;
 
@@ -52,25 +61,20 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     _symbolController = TextEditingController(
       text: widget.investment?.symbol ?? "",
     );
-    _sharesController = TextEditingController(
-      text: widget.investment?.shares.toString() ?? "",
-    );
-    _purchasePriceController = TextEditingController(
-      text: widget.investment?.purchasePrice.toString() ?? "",
-    );
-    _currentPriceController = TextEditingController(
-      text: widget.investment?.currentPrice.toString() ?? "",
-    );
     _noteController = TextEditingController(
       text: widget.investment?.note ?? "",
     );
 
     if (_isEditing) {
+      _shares = widget.investment!.shares;
+      _purchasePrice = widget.investment!.purchasePrice;
+      _currentPrice = widget.investment!.currentPrice;
       _purchaseDate = widget.investment!.purchaseDate;
       _selectedWalletPk = widget.investment!.walletFk;
-      _selectedCategoryPk = widget.investment!.categoryFk;
+      _selectedInvestmentType = widget.investment!.investmentType;
     } else {
       _selectedWalletPk = "0";
+      _selectedInvestmentType = 'stock'; // Default to stock
     }
   }
 
@@ -78,11 +82,89 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   void dispose() {
     _nameController.dispose();
     _symbolController.dispose();
-    _sharesController.dispose();
-    _purchasePriceController.dispose();
-    _currentPriceController.dispose();
     _noteController.dispose();
     super.dispose();
+  }
+
+  Future<void> _selectShares() async {
+    await openBottomSheet(
+      context,
+      fullSnap: true,
+      PopupFramework(
+        title: "shares".tr(),
+        hasPadding: false,
+        underTitleSpace: false,
+        child: SelectAmount(
+          padding: EdgeInsetsDirectional.symmetric(horizontal: 18),
+          amountPassed: _shares?.toString() ?? "",
+          setSelectedAmount: (amount, _) {
+            setState(() {
+              _shares = amount;
+            });
+          },
+          next: () {
+            Navigator.pop(context);
+          },
+          nextLabel: "set-amount".tr(),
+          enableWalletPicker: false,
+          allowZero: false,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectPurchasePrice() async {
+    await openBottomSheet(
+      context,
+      fullSnap: true,
+      PopupFramework(
+        title: "purchase-price".tr(),
+        hasPadding: false,
+        underTitleSpace: false,
+        child: SelectAmount(
+          padding: EdgeInsetsDirectional.symmetric(horizontal: 18),
+          amountPassed: _purchasePrice?.toString() ?? "",
+          setSelectedAmount: (amount, _) {
+            setState(() {
+              _purchasePrice = amount;
+            });
+          },
+          next: () {
+            Navigator.pop(context);
+          },
+          nextLabel: "set-amount".tr(),
+          walletPkForCurrency: _selectedWalletPk,
+          allowZero: false,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectCurrentPrice() async {
+    await openBottomSheet(
+      context,
+      fullSnap: true,
+      PopupFramework(
+        title: "current-price".tr(),
+        hasPadding: false,
+        underTitleSpace: false,
+        child: SelectAmount(
+          padding: EdgeInsetsDirectional.symmetric(horizontal: 18),
+          amountPassed: _currentPrice?.toString() ?? "",
+          setSelectedAmount: (amount, _) {
+            setState(() {
+              _currentPrice = amount;
+            });
+          },
+          next: () {
+            Navigator.pop(context);
+          },
+          nextLabel: "set-amount".tr(),
+          walletPkForCurrency: _selectedWalletPk,
+          allowZero: false,
+        ),
+      ),
+    );
   }
 
   @override
@@ -93,90 +175,319 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: getHorizontalPaddingConstrained(context),
+            ),
             child: Column(
               children: [
-                TextInput(
-                  labelText: "name".tr(),
-                  icon: Icons.label,
+                SizedBox(height: 13),
+                // Name
+                BudgetTextInput.TextInput(
+                  labelText: "investment-name".tr(),
+                  icon: Icons.label_outline,
                   controller: _nameController,
                   autoFocus: !_isEditing,
-                  bubbly: false,
+                  padding: EdgeInsetsDirectional.zero,
                 ),
-                SizedBox(height: 16),
-                TextInput(
-                  labelText: "symbol".tr(),
-                  icon: Icons.tag,
+                SizedBox(height: 7),
+                // Symbol (optional)
+                BudgetTextInput.TextInput(
+                  labelText: "symbol-ticker".tr() + " (" + "optional".tr() + ")",
+                  icon: Icons.tag_outlined,
                   controller: _symbolController,
-                  bubbly: false,
+                  padding: EdgeInsetsDirectional.zero,
                 ),
-                SizedBox(height: 16),
-                TextInput(
-                  labelText: "shares".tr(),
-                  icon: Icons.pie_chart,
-                  controller: _sharesController,
-                  keyboardType: TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  bubbly: false,
+                SizedBox(height: 7),
+                // Notes (optional)
+                BudgetTextInput.TextInput(
+                  labelText: "note".tr() + " (" + "optional".tr() + ")",
+                  icon: appStateSettings["outlinedIcons"]
+                      ? Icons.note_outlined
+                      : Icons.note,
+                  controller: _noteController,
+                  padding: EdgeInsetsDirectional.zero,
                 ),
-                SizedBox(height: 16),
-                TextInput(
-                  labelText: "purchase-price".tr(),
-                  icon: Icons.attach_money,
-                  controller: _purchasePriceController,
-                  keyboardType: TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  bubbly: false,
+                SizedBox(height: 20),
+                // Investment Type Selector
+                TextFont(
+                  text: "investment-type".tr(),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-                SizedBox(height: 16),
-                TextInput(
-                  labelText: "current-price".tr(),
-                  icon: Icons.trending_up,
-                  controller: _currentPriceController,
-                  keyboardType: TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  bubbly: false,
+                SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: getInvestmentTypes().map((type) {
+                    final isSelected = _selectedInvestmentType == type.key;
+                    return Tappable(
+                      onTap: () {
+                        setState(() {
+                          _selectedInvestmentType = type.key;
+                        });
+                      },
+                      borderRadius: 15,
+                      color: isSelected
+                          ? type.color.withOpacity(0.2)
+                          : getColor(context, "lightDarkAccentHeavyLight"),
+                      child: Container(
+                        padding: EdgeInsetsDirectional.symmetric(
+                          horizontal: 15,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          border: isSelected
+                              ? Border.all(color: type.color, width: 2)
+                              : null,
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              type.icon,
+                              size: 20,
+                              color: isSelected ? type.color : null,
+                            ),
+                            SizedBox(width: 8),
+                            TextFont(
+                              text: type.name,
+                              fontSize: 14,
+                              fontWeight:
+                                  isSelected ? FontWeight.bold : FontWeight.normal,
+                              textColor: isSelected ? type.color : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
-                SizedBox(height: 16),
+                SizedBox(height: 20),
+                // Shares
                 Tappable(
-                  onTap: () => _selectPurchaseDate(),
+                  onTap: _selectShares,
                   borderRadius: 15,
                   color: getColor(context, "lightDarkAccentHeavyLight"),
-                  child: Container(
-                    padding: EdgeInsets.all(16),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.all(20),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.calendar_today),
-                            SizedBox(width: 12),
-                            Text(getWordedDate(_purchaseDate)),
+                            Icon(
+                              appStateSettings["outlinedIcons"]
+                                  ? Icons.pie_chart_outline
+                                  : Icons.pie_chart_rounded,
+                              size: 25,
+                            ),
+                            SizedBox(width: 17),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFont(
+                                  text: "shares".tr(),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                if (_shares != null)
+                                  TextFont(
+                                    text: _shares.toString(),
+                                    fontSize: 14,
+                                    textColor: getColor(context, "textLight"),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
-                        Icon(Icons.chevron_right),
+                        Icon(
+                          appStateSettings["outlinedIcons"]
+                              ? Icons.chevron_right_outlined
+                              : Icons.chevron_right_rounded,
+                        ),
                       ],
                     ),
                   ),
                 ),
-                SizedBox(height: 32),
-                Button(
-                  label: _isEditing ? "save".tr() : "create".tr(),
-                  onTap: _saveInvestment,
-                  expandedLayout: true,
-                ),
-                if (_isEditing) ...[
-                  SizedBox(height: 16),
-                  Button(
-                    label: "delete".tr(),
-                    onTap: _deleteInvestment,
-                    color: Colors.red,
-                    expandedLayout: true,
+                SizedBox(height: 7),
+                // Purchase Price
+                Tappable(
+                  onTap: _selectPurchasePrice,
+                  borderRadius: 15,
+                  color: getColor(context, "lightDarkAccentHeavyLight"),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              appStateSettings["outlinedIcons"]
+                                  ? Icons.attach_money_outlined
+                                  : Icons.attach_money,
+                              size: 25,
+                            ),
+                            SizedBox(width: 17),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFont(
+                                  text: "purchase-price".tr(),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                if (_purchasePrice != null)
+                                  TextFont(
+                                    text: convertToMoney(
+                                      Provider.of<AllWallets>(context),
+                                      _purchasePrice!,
+                                    ),
+                                    fontSize: 14,
+                                    textColor: getColor(context, "textLight"),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Icon(
+                          appStateSettings["outlinedIcons"]
+                              ? Icons.chevron_right_outlined
+                              : Icons.chevron_right_rounded,
+                        ),
+                      ],
+                    ),
                   ),
-                ],
+                ),
+                SizedBox(height: 7),
+                // Current Price
+                Tappable(
+                  onTap: _selectCurrentPrice,
+                  borderRadius: 15,
+                  color: getColor(context, "lightDarkAccentHeavyLight"),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              appStateSettings["outlinedIcons"]
+                                  ? Icons.trending_up_outlined
+                                  : Icons.trending_up_rounded,
+                              size: 25,
+                            ),
+                            SizedBox(width: 17),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFont(
+                                  text: "current-price".tr(),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                if (_currentPrice != null)
+                                  TextFont(
+                                    text: convertToMoney(
+                                      Provider.of<AllWallets>(context),
+                                      _currentPrice!,
+                                    ),
+                                    fontSize: 14,
+                                    textColor: getColor(context, "textLight"),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Icon(
+                          appStateSettings["outlinedIcons"]
+                              ? Icons.chevron_right_outlined
+                              : Icons.chevron_right_rounded,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 7),
+                // Purchase Date
+                Tappable(
+                  onTap: () async {
+                    final picked = await showCustomDatePicker(
+                      context,
+                      _purchaseDate,
+                    );
+                    if (picked != null) {
+                      setState(() => _purchaseDate = picked);
+                    }
+                  },
+                  borderRadius: 15,
+                  color: getColor(context, "lightDarkAccentHeavyLight"),
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.all(20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              appStateSettings["outlinedIcons"]
+                                  ? Icons.calendar_today_outlined
+                                  : Icons.calendar_today_rounded,
+                              size: 25,
+                            ),
+                            SizedBox(width: 17),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFont(
+                                  text: "purchase-date".tr(),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                TextFont(
+                                  text: getWordedDate(_purchaseDate),
+                                  fontSize: 14,
+                                  textColor: getColor(context, "textLight"),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Icon(
+                          appStateSettings["outlinedIcons"]
+                              ? Icons.chevron_right_outlined
+                              : Icons.chevron_right_rounded,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 25),
+                // Save/Delete Buttons
+                Row(
+                  children: [
+                    if (_isEditing)
+                      Expanded(
+                        child: Button(
+                          label: "delete".tr(),
+                          onTap: _deleteInvestment,
+                          color: Theme.of(context).colorScheme.error,
+                          expandedLayout: true,
+                        ),
+                      ),
+                    if (_isEditing) SizedBox(width: 13),
+                    Expanded(
+                      child: Button(
+                        label: _isEditing ? "save-changes".tr() : "add-investment".tr(),
+                        onTap: _saveInvestment,
+                        expandedLayout: true,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 13),
               ],
             ),
           ),
@@ -185,57 +496,42 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     );
   }
 
-  Future<void> _selectPurchaseDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _purchaseDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-    );
-
-    if (picked != null) {
-      setState(() => _purchaseDate = picked);
-    }
-  }
-
   Future<void> _saveInvestment() async {
-    if (_nameController.text.isEmpty) {
+    // Validation
+    if (_nameController.text.trim().isEmpty) {
       openSnackbar(
         SnackbarMessage(
-          title: "name-required".tr(),
+          title: "investment-name-required".tr(),
           icon: Icons.warning,
         ),
       );
       return;
     }
 
-    final shares = double.tryParse(_sharesController.text);
-    if (shares == null || shares <= 0) {
+    if (_shares == null || _shares! <= 0) {
       openSnackbar(
         SnackbarMessage(
-          title: "invalid-shares".tr(),
+          title: "please-enter-shares".tr(),
           icon: Icons.warning,
         ),
       );
       return;
     }
 
-    final purchasePrice = double.tryParse(_purchasePriceController.text);
-    if (purchasePrice == null || purchasePrice < 0) {
+    if (_purchasePrice == null || _purchasePrice! < 0) {
       openSnackbar(
         SnackbarMessage(
-          title: "invalid-purchase-price".tr(),
+          title: "please-enter-purchase-price".tr(),
           icon: Icons.warning,
         ),
       );
       return;
     }
 
-    final currentPrice = double.tryParse(_currentPriceController.text);
-    if (currentPrice == null || currentPrice < 0) {
+    if (_currentPrice == null || _currentPrice! < 0) {
       openSnackbar(
         SnackbarMessage(
-          title: "invalid-current-price".tr(),
+          title: "please-enter-current-price".tr(),
           icon: Icons.warning,
         ),
       );
@@ -246,20 +542,24 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       investmentPk: Value(
         _isEditing ? widget.investment!.investmentPk : uuid.v4()
       ),
-      name: Value(_nameController.text),
-      symbol: Value(_symbolController.text.isNotEmpty
-        ? _symbolController.text
+      name: Value(_nameController.text.trim()),
+      symbol: Value(_symbolController.text.trim().isNotEmpty
+        ? _symbolController.text.trim().toUpperCase()
         : null),
-      shares: Value(shares),
-      purchasePrice: Value(purchasePrice),
-      currentPrice: Value(currentPrice),
+      investmentType: Value(_selectedInvestmentType),
+      shares: Value(_shares!),
+      purchasePrice: Value(_purchasePrice!),
+      currentPrice: Value(_currentPrice!),
       purchaseDate: Value(_purchaseDate),
       walletFk: Value(_selectedWalletPk ?? "0"),
-      categoryFk: Value(_selectedCategoryPk),
-      colour: Value(null),
+      colour: Value(getInvestmentTypeColor(_selectedInvestmentType).value.toRadixString(16).padLeft(8, '0')),
       iconName: Value(null),
-      note: Value(_noteController.text.isNotEmpty
-        ? _noteController.text
+      emojiIconName: Value(null),
+      pinned: Value(false),
+      archived: Value(false),
+      order: Value(_isEditing ? widget.investment!.order : 0),
+      note: Value(_noteController.text.trim().isNotEmpty
+        ? _noteController.text.trim()
         : null),
       dateTimeModified: Value(DateTime.now()),
       dateCreated: Value(
@@ -278,8 +578,8 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       await database.addPriceHistory(
         InvestmentPriceHistoriesCompanion.insert(
           investmentFk: companion.investmentPk.value,
-          price: currentPrice,
-          date: _purchaseDate,
+          price: _currentPrice!,
+          date: Value(_purchaseDate),
           note: Value("initial-purchase".tr()),
         ),
       );
