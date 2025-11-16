@@ -2,12 +2,16 @@ import 'package:budget/colors.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addInvestmentPage.dart';
+import 'package:budget/pages/updateInvestmentPricePage.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/investmentTypes.dart';
 import 'package:budget/struct/settings.dart';
+import 'package:budget/widgets/fab.dart';
+import 'package:budget/widgets/fadeIn.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/lineGraph.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
+import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -59,6 +63,15 @@ class InvestmentPage extends StatelessWidget {
               },
             ),
           ],
+          floatingActionButton: AnimateFABDelayed(
+            fab: AddFAB(
+              tooltip: "update-price".tr(),
+              icon: appStateSettings["outlinedIcons"]
+                  ? Icons.price_change_outlined
+                  : Icons.price_change_rounded,
+              openPage: UpdateInvestmentPricePage(investment: investment),
+            ),
+          ),
           slivers: [
             // Header with icon
             SliverToBoxAdapter(
@@ -247,21 +260,259 @@ class InvestmentPage extends StatelessWidget {
               ),
             ),
 
-            // Price History Chart - TODO: Implement watchPriceHistory in database
-            // SliverToBoxAdapter(
-            //   child: Padding(
-            //     padding: EdgeInsetsDirectional.symmetric(
-            //       horizontal: getHorizontalPaddingConstrained(context),
-            //       vertical: 10,
-            //     ),
-            //     child: TextFont(
-            //       text: "price-history-coming-soon".tr(),
-            //       fontSize: 14,
-            //       textColor: getColor(context, "textLight"),
-            //       textAlign: TextAlign.center,
-            //     ),
-            //   ),
-            // ),
+            // Price History Chart
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: getHorizontalPaddingConstrained(context),
+                  vertical: 10,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFont(
+                      text: "price-history".tr(),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    SizedBox(height: 10),
+                    StreamBuilder<List<InvestmentPriceHistory>>(
+                      stream: database.watchInvestmentPriceHistory(investmentPk),
+                      builder: (context, historySnapshot) {
+                        if (!historySnapshot.hasData ||
+                            historySnapshot.data!.isEmpty) {
+                          return Container(
+                            height: 200,
+                            decoration: BoxDecoration(
+                              color: getColor(context, "lightDarkAccentHeavyLight"),
+                              borderRadius: BorderRadius.circular(
+                                getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                              ),
+                            ),
+                            child: Center(
+                              child: TextFont(
+                                text: "no-price-history".tr(),
+                                textColor: getColor(context, "textLight"),
+                              ),
+                            ),
+                          );
+                        }
+
+                        final priceHistory = historySnapshot.data!;
+
+                        // Build points for graph (reverse to show oldest first)
+                        final sortedHistory = priceHistory.reversed.toList();
+                        List<Pair> points = [];
+
+                        for (int i = 0; i < sortedHistory.length; i++) {
+                          points.add(
+                            Pair(i.toDouble(), sortedHistory[i].price),
+                          );
+                        }
+
+                        return Container(
+                          height: 250,
+                          decoration: BoxDecoration(
+                            color: getColor(context, "lightDarkAccentHeavyLight"),
+                            borderRadius: BorderRadius.circular(
+                              getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                            ),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.all(15),
+                            child: LineChartWrapper(
+                              points: [points],
+                              isCurved: true,
+                              amountBefore: 0,
+                              endDate: DateTime.now(),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Price History List
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: getHorizontalPaddingConstrained(context),
+                  vertical: 10,
+                ),
+                child: TextFont(
+                  text: "price-updates".tr(),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            StreamBuilder<List<InvestmentPriceHistory>>(
+              stream: database.watchInvestmentPriceHistory(investmentPk, limit: 50),
+              builder: (context, historySnapshot) {
+                if (!historySnapshot.hasData) {
+                  return SliverToBoxAdapter(
+                    child: Container(
+                      padding: EdgeInsets.all(20),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                  );
+                }
+
+                final priceHistory = historySnapshot.data!;
+
+                if (priceHistory.isEmpty) {
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.symmetric(
+                        horizontal: getHorizontalPaddingConstrained(context),
+                      ),
+                      child: Container(
+                        padding: EdgeInsets.all(30),
+                        decoration: BoxDecoration(
+                          color: getColor(context, "lightDarkAccentHeavyLight"),
+                          borderRadius: BorderRadius.circular(
+                            getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                          ),
+                        ),
+                        child: Center(
+                          child: TextFont(
+                            text: "no-price-updates".tr(),
+                            textColor: getColor(context, "textLight"),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final historyEntry = priceHistory[index];
+                      final previousPrice = index < priceHistory.length - 1
+                          ? priceHistory[index + 1].price
+                          : null;
+
+                      double? priceDifference;
+                      double? percentageChange;
+                      bool? isIncrease;
+
+                      if (previousPrice != null && previousPrice > 0) {
+                        priceDifference = historyEntry.price - previousPrice;
+                        percentageChange = (priceDifference / previousPrice) * 100;
+                        isIncrease = priceDifference >= 0;
+                      }
+
+                      return Padding(
+                        padding: EdgeInsetsDirectional.only(
+                          bottom: 7,
+                          start: getHorizontalPaddingConstrained(context),
+                          end: getHorizontalPaddingConstrained(context),
+                        ),
+                        child: Tappable(
+                          color: getColor(context, "lightDarkAccentHeavyLight"),
+                          borderRadius: getPlatform() == PlatformOS.isIOS ? 0 : 12,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.all(15),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          TextFont(
+                                            text: convertToMoney(
+                                              Provider.of<AllWallets>(context),
+                                              historyEntry.price,
+                                            ),
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          if (isIncrease != null) ...[
+                                            SizedBox(width: 10),
+                                            Container(
+                                              padding: EdgeInsetsDirectional.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: isIncrease
+                                                    ? getColor(context, "incomeAmount")
+                                                        .withOpacity(0.15)
+                                                    : getColor(context, "expenseAmount")
+                                                        .withOpacity(0.15),
+                                                borderRadius: BorderRadius.circular(8),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(
+                                                    isIncrease
+                                                        ? Icons.arrow_upward_rounded
+                                                        : Icons.arrow_downward_rounded,
+                                                    size: 12,
+                                                    color: isIncrease
+                                                        ? getColor(context, "incomeAmount")
+                                                        : getColor(context, "expenseAmount"),
+                                                  ),
+                                                  SizedBox(width: 3),
+                                                  TextFont(
+                                                    text: percentageChange!
+                                                        .abs()
+                                                        .toStringAsFixed(1) +
+                                                        "%",
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    textColor: isIncrease
+                                                        ? getColor(context, "incomeAmount")
+                                                        : getColor(context, "expenseAmount"),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      SizedBox(height: 5),
+                                      TextFont(
+                                        text: getWordedDateShort(historyEntry.date),
+                                        fontSize: 14,
+                                        textColor: getColor(context, "textLight"),
+                                      ),
+                                      if (historyEntry.note != null &&
+                                          historyEntry.note!.isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsetsDirectional.only(top: 5),
+                                          child: TextFont(
+                                            text: historyEntry.note!,
+                                            fontSize: 13,
+                                            textColor: getColor(context, "textLight"),
+                                            maxLines: 2,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                    childCount: priceHistory.length,
+                  ),
+                );
+              },
+            ),
+
+            SliverToBoxAdapter(child: SizedBox(height: 10)),
 
             // Holdings Details
             SliverToBoxAdapter(
