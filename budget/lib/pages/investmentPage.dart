@@ -2,23 +2,29 @@ import 'package:budget/colors.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addInvestmentPage.dart';
+import 'package:budget/pages/linkInvestmentTickerPage.dart';
 import 'package:budget/pages/updateInvestmentPricePage.dart';
+import 'package:budget/services/investmentPriceService.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/investmentTypes.dart';
 import 'package:budget/struct/settings.dart';
+import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/fab.dart';
 import 'package:budget/widgets/fadeIn.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
+import 'package:budget/widgets/globalSnackbar.dart';
 import 'package:budget/widgets/lineGraph.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
+import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:drift/drift.dart' hide Column;
 
-class InvestmentPage extends StatelessWidget {
+class InvestmentPage extends StatefulWidget {
   const InvestmentPage({
     Key? key,
     required this.investmentPk,
@@ -27,9 +33,78 @@ class InvestmentPage extends StatelessWidget {
   final String investmentPk;
 
   @override
+  State<InvestmentPage> createState() => _InvestmentPageState();
+}
+
+class _InvestmentPageState extends State<InvestmentPage> {
+  final InvestmentPriceService _priceService = InvestmentPriceService();
+  bool _isUpdatingPrice = false;
+
+  Future<void> _updatePriceFromAPI(Investment investment) async {
+    if (investment.symbol == null || investment.symbol!.isEmpty) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "no-ticker-linked".tr(),
+          description: "link-ticker-first".tr(),
+          icon: Icons.warning,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isUpdatingPrice = true;
+    });
+
+    try {
+      final result = await _priceService.fetchPrice(
+        investment.symbol!,
+        investment.investmentType,
+      );
+
+      if (result.isSuccess && result.price != null) {
+        await database.updateInvestmentPrice(
+          investmentPk: investment.investmentPk,
+          newPrice: result.price!,
+          note: "auto-update-from-api".tr(),
+        );
+
+        openSnackbar(
+          SnackbarMessage(
+            title: "price-updated-successfully".tr(),
+            description:
+                "${result.currency ?? 'USD'} ${result.price!.toStringAsFixed(2)}",
+            icon: Icons.check,
+          ),
+        );
+      } else {
+        openSnackbar(
+          SnackbarMessage(
+            title: "error-fetching-price".tr(),
+            description: result.error ?? "unknown-error".tr(),
+            icon: Icons.error,
+          ),
+        );
+      }
+    } catch (e) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "error-fetching-price".tr(),
+          description: e.toString(),
+          icon: Icons.error,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isUpdatingPrice = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<Investment>(
-      stream: database.getInvestment(investmentPk),
+      stream: database.getInvestment(widget.investmentPk),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return SizedBox.shrink();
@@ -259,6 +334,119 @@ class InvestmentPage extends StatelessWidget {
                 ),
               ),
             ),
+
+            // API Price Update Section
+            if (_priceService.getProviderForType(investment.investmentType) != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.symmetric(
+                    horizontal: getHorizontalPaddingConstrained(context),
+                    vertical: 5,
+                  ),
+                  child: Container(
+                    padding: EdgeInsetsDirectional.all(18),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(
+                        getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.cloud_sync_outlined,
+                              size: 20,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: TextFont(
+                                text: "automatic-price-updates".tr(),
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (investment.symbol != null && investment.symbol!.isNotEmpty) ...[
+                          SizedBox(height: 10),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.link,
+                                size: 16,
+                                color: getColor(context, "textLight"),
+                              ),
+                              SizedBox(width: 5),
+                              TextFont(
+                                text: "linked-to".tr() + ": ${investment.symbol}",
+                                fontSize: 14,
+                                textColor: getColor(context, "textLight"),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Button(
+                                  label: _isUpdatingPrice
+                                      ? "updating".tr()
+                                      : "update-from-api".tr(),
+                                  onTap: _isUpdatingPrice
+                                      ? null
+                                      : () => _updatePriceFromAPI(investment),
+                                  icon: _isUpdatingPrice
+                                      ? null
+                                      : Icons.refresh,
+                                  expandedLayout: true,
+                                ),
+                              ),
+                              SizedBox(width: 10),
+                              Button(
+                                label: "change".tr(),
+                                onTap: () async {
+                                  await pushRoute(
+                                    context,
+                                    LinkInvestmentTickerPage(
+                                      investment: investment,
+                                    ),
+                                  );
+                                },
+                                icon: Icons.edit_outlined,
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          SizedBox(height: 10),
+                          TextFont(
+                            text: "no-ticker-linked-description".tr(),
+                            fontSize: 14,
+                            textColor: getColor(context, "textLight"),
+                          ),
+                          SizedBox(height: 12),
+                          Button(
+                            label: "link-ticker".tr(),
+                            onTap: () async {
+                              await pushRoute(
+                                context,
+                                LinkInvestmentTickerPage(
+                                  investment: investment,
+                                ),
+                              );
+                            },
+                            icon: Icons.link,
+                            expandedLayout: true,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ),
 
             // Price History Chart
             SliverToBoxAdapter(

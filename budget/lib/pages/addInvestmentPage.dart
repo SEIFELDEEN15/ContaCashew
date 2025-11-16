@@ -1,6 +1,8 @@
 import 'package:budget/colors.dart';
 import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
+import 'package:budget/pages/linkInvestmentTickerPage.dart';
+import 'package:budget/services/investmentPriceService.dart';
 import 'package:budget/struct/databaseGlobal.dart';
 import 'package:budget/struct/investmentTypes.dart';
 import 'package:budget/struct/settings.dart';
@@ -190,11 +192,44 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                 ),
                 SizedBox(height: 7),
                 // Symbol (optional)
-                BudgetTextInput.TextInput(
-                  labelText: "symbol-ticker".tr() + " (" + "optional".tr() + ")",
-                  icon: Icons.tag_outlined,
-                  controller: _symbolController,
-                  padding: EdgeInsetsDirectional.zero,
+                Row(
+                  children: [
+                    Expanded(
+                      child: BudgetTextInput.TextInput(
+                        labelText: "symbol-ticker".tr() + " (" + "optional".tr() + ")",
+                        icon: Icons.tag_outlined,
+                        controller: _symbolController,
+                        padding: EdgeInsetsDirectional.zero,
+                      ),
+                    ),
+                    if (_isEditing && InvestmentPriceService().getProviderForType(_selectedInvestmentType) != null) ...[
+                      SizedBox(width: 10),
+                      Padding(
+                        padding: EdgeInsetsDirectional.only(bottom: 7),
+                        child: Button(
+                          label: "search".tr(),
+                          onTap: () async {
+                            final result = await pushRoute(
+                              context,
+                              LinkInvestmentTickerPage(
+                                investment: widget.investment!,
+                              ),
+                            );
+                            if (result == true) {
+                              // Refresh symbol
+                              final updated = await database
+                                  .getInvestment(widget.investment!.investmentPk)
+                                  .first;
+                              setState(() {
+                                _symbolController.text = updated.symbol ?? "";
+                              });
+                            }
+                          },
+                          icon: Icons.search,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 SizedBox(height: 7),
                 // Notes (optional)
