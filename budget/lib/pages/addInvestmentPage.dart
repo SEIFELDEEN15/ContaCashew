@@ -12,7 +12,6 @@ import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/openPopup.dart';
 import 'package:budget/widgets/selectAmount.dart';
-import 'package:budget/widgets/selectChips.dart';
 import 'package:budget/widgets/textInput.dart' as BudgetTextInput;
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:budget/widgets/tappable.dart';

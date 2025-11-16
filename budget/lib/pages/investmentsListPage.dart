@@ -249,7 +249,9 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
           horizontal: getHorizontalPaddingConstrained(context) + 13),
       child: IncomeExpenseTabSelector(
         hasBorderRadius: true,
-        onTabChanged: (_) {},
+        onTabChanged: (_) {
+          setState(() {});
+        },
         initialTabIsIncome: appStateSettings["investmentsLastPage"] == 1,
         showIcons: false,
         tabController: _tabController,
@@ -575,7 +577,8 @@ class InvestmentsPieChartSection extends StatelessWidget {
                             .toRadixString(16)
                             .padLeft(8, '0')
                             .substring(2),
-                    iconName: null,
+                    iconName: "",
+                    emojiIconName: "📊",
                     dateCreated: DateTime.now(),
                     dateTimeModified: null,
                     order: 0,
