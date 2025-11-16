@@ -552,6 +552,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       currentPrice: Value(_currentPrice!),
       purchaseDate: Value(_purchaseDate),
       walletFk: Value(_selectedWalletPk ?? "0"),
+      categoryFk: Value(null),
       colour: Value(getInvestmentTypeColor(_selectedInvestmentType).value.toRadixString(16).padLeft(8, '0')),
       iconName: Value(null),
       emojiIconName: Value(null),
@@ -585,14 +586,14 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       );
     }
 
+    Navigator.pop(context);
+
     openSnackbar(
       SnackbarMessage(
         title: _isEditing ? "investment-updated".tr() : "investment-created".tr(),
         icon: Icons.check,
       ),
     );
-
-    Navigator.pop(context);
   }
 
   Future<void> _deleteInvestment() async {
