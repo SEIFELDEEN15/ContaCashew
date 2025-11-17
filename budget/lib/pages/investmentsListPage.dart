@@ -332,55 +332,78 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
           horizontal: getHorizontalPaddingConstrained(context) + 13),
       child: StreamBuilder<Map<String, double>>(
         stream: database.watchPortfolioSummary(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+        builder: (context, investmentSummarySnapshot) {
+          if (!investmentSummarySnapshot.hasData) {
             return SizedBox.shrink();
           }
-          final summary = snapshot.data!;
-          final totalValue = summary['totalValue'] ?? 0;
-          final gainLoss = summary['gainLoss'] ?? 0;
-          final gainLossPercentage = summary['gainLossPercentage'] ?? 0;
+          final investmentSummary = investmentSummarySnapshot.data!;
+          final investmentValue = investmentSummary['totalValue'] ?? 0;
+          final investmentCost = investmentSummary['totalCost'] ?? 0;
 
           return StreamBuilder<List<Investment>>(
             stream: database.watchAllInvestments(hideArchived: true),
             builder: (context, investmentsSnapshot) {
               final investmentCount = investmentsSnapshot.data?.length ?? 0;
 
-              return Column(
-                children: [
-                  TransactionsAmountBox(
-                    onLongPress: () {
-                      selectPeriod();
-                    },
-                    label: "total-portfolio-value".tr(),
-                    getTextColor: (double amount) {
-                      return getColor(context, "black");
-                    },
-                    absolute: false,
-                    totalWithCountStream: Stream.value(
-                      TotalWithCount(
-                        total: totalValue,
-                        count: investmentCount,
+              return StreamBuilder<List<WalletWithDetails>>(
+                stream: database.watchAllWalletsWithDetails(),
+                builder: (context, walletsSnapshot) {
+                  // Get excluded wallets from settings
+                  List<String> excludedWallets =
+                      appStateSettings["excludedWalletsFromInvestments"] ?? [];
+
+                  double walletsTotal = 0;
+                  if (walletsSnapshot.hasData) {
+                    for (var wallet in walletsSnapshot.data!) {
+                      if (!excludedWallets.contains(wallet.wallet.walletPk)) {
+                        walletsTotal += wallet.totalSpent ?? 0;
+                      }
+                    }
+                  }
+
+                  final totalValue = investmentValue + walletsTotal;
+                  final gainLoss = investmentValue - investmentCost;
+                  final gainLossPercentage = investmentCost > 0
+                      ? (gainLoss / investmentCost) * 100
+                      : 0;
+
+                  return Column(
+                    children: [
+                      TransactionsAmountBox(
+                        onLongPress: () {
+                          selectPeriod();
+                        },
+                        label: "total-portfolio-value".tr(),
+                        getTextColor: (double amount) {
+                          return getColor(context, "black");
+                        },
+                        absolute: false,
+                        totalWithCountStream: Stream.value(
+                          TotalWithCount(
+                            total: totalValue,
+                            count: investmentCount,
+                          ),
+                        ),
+                        textColor: getColor(context, "black"),
+                        countLabel: "investment".tr(),
+                        countLabelPlural: "investments".tr(),
                       ),
-                    ),
-                    textColor: getColor(context, "black"),
-                    countLabel: "investment".tr(),
-                    countLabelPlural: "investments".tr(),
-                  ),
-                  if (gainLoss != 0)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(top: 8),
-                      child: TextFont(
-                        text:
-                            "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        textColor: gainLoss >= 0
-                            ? getColor(context, "incomeAmount")
-                            : getColor(context, "expenseAmount"),
-                      ),
-                    ),
-                ],
+                      if (gainLoss != 0)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(top: 8),
+                          child: TextFont(
+                            text:
+                                "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            textColor: gainLoss >= 0
+                                ? getColor(context, "incomeAmount")
+                                : getColor(context, "expenseAmount"),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               );
             },
           );
@@ -540,6 +563,11 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final walletWithDetails = wallets[index];
+                List<String> excludedWallets =
+                    appStateSettings["excludedWalletsFromInvestments"] ?? [];
+                bool isExcluded =
+                    excludedWallets.contains(walletWithDetails.wallet.walletPk);
+
                 return Padding(
                   padding: EdgeInsetsDirectional.only(
                     start: getHorizontalPaddingConstrained(context) + 13,
@@ -562,8 +590,9 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
                             height: 50,
                             decoration: BoxDecoration(
                               color: HexColor(walletWithDetails.wallet.colour,
-                                  defaultColor:
-                                      Theme.of(context).colorScheme.primary),
+                                      defaultColor:
+                                          Theme.of(context).colorScheme.primary)
+                                  .withOpacity(isExcluded ? 0.3 : 1.0),
                               borderRadius: BorderRadius.circular(10),
                             ),
                             child: Center(
@@ -585,6 +614,9 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
                                   fontWeight: FontWeight.bold,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
+                                  textColor: isExcluded
+                                      ? getColor(context, "textLight")
+                                      : null,
                                 ),
                                 SizedBox(height: 2),
                                 TextFont(
@@ -605,13 +637,49 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
                           ),
                           SizedBox(width: 10),
                           // Balance
-                          TextFont(
-                            text: convertToMoney(
-                              Provider.of<AllWallets>(context),
-                              walletWithDetails.totalSpent ?? 0,
-                            ),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              TextFont(
+                                text: convertToMoney(
+                                  Provider.of<AllWallets>(context),
+                                  walletWithDetails.totalSpent ?? 0,
+                                ),
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                textColor: isExcluded
+                                    ? getColor(context, "textLight")
+                                    : null,
+                              ),
+                              SizedBox(height: 4),
+                              // Toggle switch
+                              Transform.scale(
+                                scale: 0.8,
+                                child: Switch(
+                                  value: !isExcluded,
+                                  onChanged: (value) async {
+                                    List<String> currentExcluded = List.from(
+                                        appStateSettings[
+                                                "excludedWalletsFromInvestments"] ??
+                                            []);
+                                    if (value) {
+                                      // Include in stats
+                                      currentExcluded.remove(
+                                          walletWithDetails.wallet.walletPk);
+                                    } else {
+                                      // Exclude from stats
+                                      currentExcluded.add(
+                                          walletWithDetails.wallet.walletPk);
+                                    }
+                                    await updateSettings(
+                                      "excludedWalletsFromInvestments",
+                                      currentExcluded,
+                                      updateGlobalState: true,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
