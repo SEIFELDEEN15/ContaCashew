@@ -364,6 +364,8 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
                       ),
                     ),
                     textColor: getColor(context, "black"),
+                    countLabel: "investment".tr(),
+                    countLabelPlural: "investments".tr(),
                   ),
                   if (gainLoss != 0)
                     Padding(

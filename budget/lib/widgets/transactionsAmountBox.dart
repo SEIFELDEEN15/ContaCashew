@@ -26,6 +26,8 @@ class TransactionsAmountBox extends StatelessWidget {
     this.invertSign = false,
     this.getTextColor,
     this.currencyKey,
+    this.countLabel,
+    this.countLabelPlural,
     super.key,
   });
   final Widget? openPage;
@@ -38,6 +40,8 @@ class TransactionsAmountBox extends StatelessWidget {
   final bool invertSign;
   final String? currencyKey;
   final Function(double)? getTextColor;
+  final String? countLabel; // Label personalizzata singolare (es: "investment")
+  final String? countLabelPlural; // Label personalizzata plurale (es: "investments")
 
   @override
   Widget build(BuildContext context) {
@@ -117,8 +121,8 @@ class TransactionsAmountBox extends StatelessWidget {
                               text: totalCount.toString() +
                                   " " +
                                   (totalCount == 1
-                                      ? "transaction".tr().toLowerCase()
-                                      : "transactions".tr().toLowerCase()),
+                                      ? (countLabel ?? "transaction".tr()).toLowerCase()
+                                      : (countLabelPlural ?? "transactions".tr()).toLowerCase()),
                               fontSize: 13,
                               textAlign: TextAlign.center,
                               textColor: getColor(context, "textLight"),

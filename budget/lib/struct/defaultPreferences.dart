@@ -107,7 +107,7 @@ Future<Map<String, dynamic>> getDefaultPreferences() async {
     // Values for customNavBarShortcuts are the keys of navBarIconsData
     "customNavBarShortcut0": "home",
     "customNavBarShortcut1": "transactions",
-    "customNavBarShortcut2": "budgets",
+    "customNavBarShortcut2": "investments",
     "showTotalSpentForBudget": false,
     "showTotalSpentForObjective": true,
     "showCumulativeSpending": true,

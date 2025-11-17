@@ -93,7 +93,7 @@ class _UpdateInvestmentPricePageState extends State<UpdateInvestmentPricePage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsetsDirectional.symmetric(
-              horizontal: getHorizontalPaddingConstrained(context),
+              horizontal: getHorizontalPaddingConstrained(context) + 13,
             ),
             child: Column(
               children: [
