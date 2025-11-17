@@ -487,6 +487,143 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
           );
         },
       ),
+      // Bank Accounts Section
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsetsDirectional.symmetric(
+            horizontal: getHorizontalPaddingConstrained(context) + 13,
+            vertical: 10,
+          ),
+          child: Text(
+            "accounts".tr(),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+      StreamBuilder<List<WalletWithDetails>>(
+        stream: database.watchAllWalletsWithDetails(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.all(20),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          }
+
+          List<WalletWithDetails> wallets = snapshot.data ?? [];
+
+          if (wallets.isEmpty) {
+            return SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.all(40),
+                child: Center(
+                  child: Text(
+                    "no-accounts".tr(),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final walletWithDetails = wallets[index];
+                return Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    start: getHorizontalPaddingConstrained(context) + 13,
+                    end: getHorizontalPaddingConstrained(context) + 13,
+                    bottom: 7,
+                  ),
+                  child: Tappable(
+                    color: getColor(context, "lightDarkAccentHeavyLight"),
+                    borderRadius: getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          // Icon
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: HexColor(walletWithDetails.wallet.colour,
+                                  defaultColor:
+                                      Theme.of(context).colorScheme.primary),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                walletWithDetails.wallet.iconName ?? "💰",
+                                style: TextStyle(fontSize: 25),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 13),
+                          // Content
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFont(
+                                  text: walletWithDetails.wallet.name,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 2),
+                                TextFont(
+                                  text: (walletWithDetails.numberTransactions ??
+                                              0)
+                                          .toString() +
+                                      " " +
+                                      ((walletWithDetails.numberTransactions ??
+                                                  0) ==
+                                              1
+                                          ? "transaction".tr()
+                                          : "transactions".tr()),
+                                  fontSize: 14,
+                                  textColor: getColor(context, "textLight"),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          // Balance
+                          TextFont(
+                            text: convertToMoney(
+                              Provider.of<AllWallets>(context),
+                              walletWithDetails.totalSpent ?? 0,
+                            ),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+              childCount: wallets.length,
+            ),
+          );
+        },
+      ),
       SliverToBoxAdapter(
         child: SizedBox(height: 20),
       ),
