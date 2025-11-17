@@ -753,6 +753,15 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       );
     }
 
+    openSnackbar(
+      SnackbarMessage(
+        title:
+            _isEditing ? "investment-updated".tr() : "investment-created".tr(),
+        icon: Icons.check,
+      ),
+    );
+
+    Navigator.pop(context);
     return true;
   }
 
