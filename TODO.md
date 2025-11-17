@@ -1,3 +1,4 @@
+togli loing googel al momento
 pagina investments:
 
 - traduzioni nelle varie pagine investimenti ancora non si vedono ma si vedono solo stringhe

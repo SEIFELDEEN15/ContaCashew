@@ -673,6 +673,9 @@ class GoogleAccountLoginButtonState extends State<GoogleAccountLoginButton> {
 
   @override
   Widget build(BuildContext context) {
+    // TEMPORARY: Google sync disabled
+    return SizedBox.shrink();
+
     if (widget.navigationSidebarButton == true) {
       return AnimatedSwitcher(
         duration: Duration(milliseconds: 600),

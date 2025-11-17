@@ -483,10 +483,10 @@ openManagePurchase() {
     openUrl("https://apps.apple.com/account/subscriptions");
   } else if (appStateSettings["purchaseID"] == productIDs["monthly"]) {
     openUrl(
-        "https://play.google.com/store/account/subscriptions?sku=cashew.pro.monthly&package=com.budget.tracker_app");
+        "https://play.google.com/store/account/subscriptions?sku=cashew.pro.monthly&package=com.eliazavatta.contaspicci");
   } else if (appStateSettings["purchaseID"] == productIDs["yearly"]) {
     openUrl(
-        "https://play.google.com/store/account/subscriptions?sku=cashew.pro.yearly&package=com.budget.tracker_app");
+        "https://play.google.com/store/account/subscriptions?sku=cashew.pro.yearly&package=com.eliazavatta.contaspicci");
   } else {
     if (getPlatform(ignoreEmulation: true) == PlatformOS.isAndroid)
       openUrl("https://play.google.com/store/account/subscriptions");
