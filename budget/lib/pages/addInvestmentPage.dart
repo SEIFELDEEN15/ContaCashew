@@ -700,6 +700,16 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       return false;
     }
 
+    if (_selectedInvestmentType == null) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "please-select-investment-type".tr(),
+          icon: Icons.warning,
+        ),
+      );
+      return false;
+    }
+
     if (_shares == null || _shares! <= 0) {
       openSnackbar(
         SnackbarMessage(
@@ -737,14 +747,14 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       symbol: Value(_symbolController.text.trim().isNotEmpty
           ? _symbolController.text.trim().toUpperCase()
           : null),
-      investmentType: Value(_selectedInvestmentType),
+      investmentType: Value(_selectedInvestmentType!),
       shares: Value(_shares!),
       purchasePrice: Value(_purchasePrice!),
       currentPrice: Value(_currentPrice!),
       purchaseDate: Value(_purchaseDate),
       walletFk: Value(_selectedWalletPk ?? "0"),
       categoryFk: Value(null),
-      colour: Value(getInvestmentTypeColor(_selectedInvestmentType)
+      colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
           .value
           .toRadixString(16)
           .padLeft(8, '0')),
