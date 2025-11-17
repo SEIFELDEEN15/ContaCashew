@@ -691,123 +691,69 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   Future<bool> _saveInvestment() async {
     // Validation
     if (_nameController.text.trim().isEmpty) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "investment-name-required".tr(),
-          icon: Icons.warning,
-        ),
-      );
       return false;
     }
-
     if (_selectedInvestmentType == null) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "please-select-investment-type".tr(),
-          icon: Icons.warning,
-        ),
-      );
       return false;
     }
-
     if (_shares == null || _shares! <= 0) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "please-enter".tr() + " " + _getSharesLabel().toLowerCase(),
-          icon: Icons.warning,
-        ),
-      );
       return false;
     }
-
     if (_purchasePrice == null || _purchasePrice! < 0) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "please-enter-purchase-price".tr(),
-          icon: Icons.warning,
-        ),
-      );
       return false;
     }
-
     if (_currentPrice == null || _currentPrice! < 0) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "please-enter-current-price".tr(),
-          icon: Icons.warning,
-        ),
-      );
       return false;
     }
 
-    try {
-      final companion = InvestmentsCompanion(
-        investmentPk:
-            Value(_isEditing ? widget.investment!.investmentPk : uuid.v4()),
-        name: Value(_nameController.text.trim()),
-        symbol: Value(_symbolController.text.trim().isNotEmpty
-            ? _symbolController.text.trim().toUpperCase()
-            : null),
-        investmentType: Value(_selectedInvestmentType!),
-        shares: Value(_shares!),
-        purchasePrice: Value(_purchasePrice!),
-        currentPrice: Value(_currentPrice!),
-        purchaseDate: Value(_purchaseDate),
-        walletFk: Value(_selectedWalletPk ?? "0"),
-        categoryFk: Value(null),
-        colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
-            .value
-            .toRadixString(16)
-            .padLeft(8, '0')),
-        iconName: Value(null),
-        emojiIconName: Value(null),
-        pinned: Value(false),
-        archived: Value(false),
-        order: Value(_isEditing ? widget.investment!.order : 0),
-        note: Value(_noteController.text.trim().isNotEmpty
-            ? _noteController.text.trim()
-            : null),
-        dateTimeModified: Value(DateTime.now()),
-        dateCreated:
-            Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
-      );
+    final companion = InvestmentsCompanion(
+      investmentPk:
+          Value(_isEditing ? widget.investment!.investmentPk : uuid.v4()),
+      name: Value(_nameController.text.trim()),
+      symbol: Value(_symbolController.text.trim().isNotEmpty
+          ? _symbolController.text.trim().toUpperCase()
+          : null),
+      investmentType: Value(_selectedInvestmentType!),
+      shares: Value(_shares!),
+      purchasePrice: Value(_purchasePrice!),
+      currentPrice: Value(_currentPrice!),
+      purchaseDate: Value(_purchaseDate),
+      walletFk: Value(_selectedWalletPk ?? "0"),
+      categoryFk: Value(null),
+      colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
+          .value
+          .toRadixString(16)
+          .padLeft(8, '0')),
+      iconName: Value(null),
+      emojiIconName: Value(null),
+      pinned: Value(false),
+      archived: Value(false),
+      order: Value(_isEditing ? widget.investment!.order : 0),
+      note: Value(_noteController.text.trim().isNotEmpty
+          ? _noteController.text.trim()
+          : null),
+      dateTimeModified: Value(DateTime.now()),
+      dateCreated:
+          Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
+    );
 
-      await database.createOrUpdateInvestment(
-        companion,
-        insert: !_isEditing,
-      );
+    await database.createOrUpdateInvestment(
+      companion,
+      insert: !_isEditing,
+    );
 
-      if (!_isEditing) {
-        await database.addPriceHistory(
-          InvestmentPriceHistoriesCompanion.insert(
-            investmentFk: companion.investmentPk.value,
-            price: _currentPrice!,
-            date: Value(_purchaseDate),
-            note: Value("initial-purchase".tr()),
-          ),
-        );
-      }
-
-      openSnackbar(
-        SnackbarMessage(
-          title:
-              _isEditing ? "investment-updated".tr() : "investment-created".tr(),
-          icon: Icons.check,
+    if (!_isEditing) {
+      await database.addPriceHistory(
+        InvestmentPriceHistoriesCompanion.insert(
+          investmentFk: companion.investmentPk.value,
+          price: _currentPrice!,
+          date: Value(_purchaseDate),
+          note: Value("initial-purchase".tr()),
         ),
       );
-
-      return true;
-    } catch (e) {
-      print("Error saving investment: $e");
-      openSnackbar(
-        SnackbarMessage(
-          title: "error".tr(),
-          description: e.toString(),
-          icon: Icons.error,
-        ),
-      );
-      return false;
     }
+
+    return true;
   }
 
   Future<void> _deleteInvestment() async {
