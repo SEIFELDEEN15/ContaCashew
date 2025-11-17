@@ -157,7 +157,9 @@ class _InvestmentPageState extends State<InvestmentPage> {
         final isGain = gainLoss >= 0;
 
         return PageFramework(
-          title: investment.name,
+          title: _getInvestmentTypeEmoji(investment.investmentType) +
+              " " +
+              investment.name,
           dragDownToDismiss: true,
           actions: [
             IconButton(
@@ -186,50 +188,6 @@ class _InvestmentPageState extends State<InvestmentPage> {
             ),
           ),
           slivers: [
-            // Header with icon
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context) + 13,
-                  vertical: 15,
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 70,
-                      height: 70,
-                      child: Center(
-                        child: Text(
-                          _getInvestmentTypeEmoji(investment.investmentType),
-                          style: TextStyle(fontSize: 50),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 15),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextFont(
-                            text: investment.name,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            maxLines: 2,
-                          ),
-                          if (investment.symbol != null)
-                            TextFont(
-                              text: investment.symbol!,
-                              fontSize: 16,
-                              textColor: getColor(context, "textLight"),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
             // Current Value Card
             SliverToBoxAdapter(
               child: Padding(

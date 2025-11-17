@@ -670,7 +670,10 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                         label: _isEditing
                             ? "save-changes".tr()
                             : "add-investment".tr(),
-                        onTap: _saveInvestment,
+                        onTap: () async {
+                          bool result = await _saveInvestment();
+                          if (result) popRoute(context);
+                        },
                         expandedLayout: true,
                       ),
                     ),
@@ -685,7 +688,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     );
   }
 
-  Future<void> _saveInvestment() async {
+  Future<bool> _saveInvestment() async {
     // Validation
     if (_nameController.text.trim().isEmpty) {
       openSnackbar(
@@ -694,7 +697,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           icon: Icons.warning,
         ),
       );
-      return;
+      return false;
     }
 
     if (_shares == null || _shares! <= 0) {
@@ -704,7 +707,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           icon: Icons.warning,
         ),
       );
-      return;
+      return false;
     }
 
     if (_purchasePrice == null || _purchasePrice! < 0) {
@@ -714,7 +717,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           icon: Icons.warning,
         ),
       );
-      return;
+      return false;
     }
 
     if (_currentPrice == null || _currentPrice! < 0) {
@@ -724,7 +727,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           icon: Icons.warning,
         ),
       );
-      return;
+      return false;
     }
 
     final companion = InvestmentsCompanion(
@@ -775,12 +778,6 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
         );
       }
 
-      // Close page first
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      // Then show snackbar
       openSnackbar(
         SnackbarMessage(
           title:
@@ -788,6 +785,8 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           icon: Icons.check,
         ),
       );
+
+      return true;
     } catch (e) {
       openSnackbar(
         SnackbarMessage(
@@ -796,6 +795,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           icon: Icons.error,
         ),
       );
+      return false;
     }
   }
 
