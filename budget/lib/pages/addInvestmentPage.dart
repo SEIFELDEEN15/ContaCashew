@@ -49,6 +49,24 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
 
   bool _isEditing = false;
 
+  String _getSharesLabel() {
+    switch (_selectedInvestmentType) {
+      case 'stock':
+      case 'etf':
+      case 'mutual-fund':
+        return "shares".tr();
+      case 'crypto':
+      case 'commodity':
+        return "amount".tr();
+      case 'bond':
+        return "units".tr();
+      case 'real-estate':
+        return "quantity".tr();
+      default:
+        return "quantity".tr();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,7 +108,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       context,
       fullSnap: true,
       PopupFramework(
-        title: "shares".tr(),
+        title: _getSharesLabel(),
         hasPadding: false,
         underTitleSpace: false,
         child: SelectAmount(
@@ -456,7 +474,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 TextFont(
-                                  text: "shares".tr(),
+                                  text: _getSharesLabel(),
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -682,7 +700,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     if (_shares == null || _shares! <= 0) {
       openSnackbar(
         SnackbarMessage(
-          title: "please-enter-shares".tr(),
+          title: "please-enter".tr() + " " + _getSharesLabel().toLowerCase(),
           icon: Icons.warning,
         ),
       );
@@ -740,31 +758,45 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
     );
 
-    await database.createOrUpdateInvestment(
-      companion,
-      insert: !_isEditing,
-    );
+    try {
+      await database.createOrUpdateInvestment(
+        companion,
+        insert: !_isEditing,
+      );
 
-    if (!_isEditing) {
-      await database.addPriceHistory(
-        InvestmentPriceHistoriesCompanion.insert(
-          investmentFk: companion.investmentPk.value,
-          price: _currentPrice!,
-          date: Value(_purchaseDate),
-          note: Value("initial-purchase".tr()),
+      if (!_isEditing) {
+        await database.addPriceHistory(
+          InvestmentPriceHistoriesCompanion.insert(
+            investmentFk: companion.investmentPk.value,
+            price: _currentPrice!,
+            date: Value(_purchaseDate),
+            note: Value("initial-purchase".tr()),
+          ),
+        );
+      }
+
+      // Close page first
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Then show snackbar
+      openSnackbar(
+        SnackbarMessage(
+          title:
+              _isEditing ? "investment-updated".tr() : "investment-created".tr(),
+          icon: Icons.check,
+        ),
+      );
+    } catch (e) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "error".tr(),
+          description: e.toString(),
+          icon: Icons.error,
         ),
       );
     }
-
-    openSnackbar(
-      SnackbarMessage(
-        title:
-            _isEditing ? "investment-updated".tr() : "investment-created".tr(),
-        icon: Icons.check,
-      ),
-    );
-
-    Navigator.of(context).pop();
   }
 
   Future<void> _deleteInvestment() async {

@@ -51,6 +51,24 @@ class InvestmentEntry extends StatelessWidget {
     }
   }
 
+  String _getSharesLabel(String? investmentType) {
+    switch (investmentType) {
+      case 'stock':
+      case 'etf':
+      case 'mutual-fund':
+        return "shares".tr();
+      case 'crypto':
+      case 'commodity':
+        return "amount".tr();
+      case 'bond':
+        return "units".tr();
+      case 'real-estate':
+        return "quantity".tr();
+      default:
+        return "quantity".tr();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentValue = investment.shares * investment.currentPrice;
@@ -103,17 +121,13 @@ class InvestmentEntry extends StatelessWidget {
                           borderRadius: 10,
                           canEditByLongPress: false,
                         )
-                      : Container(
+                      : SizedBox(
                           width: 50,
                           height: 50,
-                          decoration: BoxDecoration(
-                            color: getInvestmentTypeColor(investment.investmentType),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
                           child: Center(
                             child: Text(
                               _getInvestmentTypeEmoji(investment.investmentType),
-                              style: TextStyle(fontSize: 25),
+                              style: TextStyle(fontSize: 30),
                             ),
                           ),
                         ),
@@ -146,11 +160,11 @@ class InvestmentEntry extends StatelessWidget {
                           ],
                         ),
                         SizedBox(height: 2),
-                        // Shares
+                        // Shares/Quantity
                         TextFont(
                           text: investment.shares.toString() +
                               " " +
-                              "shares".tr(),
+                              _getSharesLabel(investment.investmentType),
                           fontSize: 14,
                           textColor: getColor(context, "textLight"),
                         ),

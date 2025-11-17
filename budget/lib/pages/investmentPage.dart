@@ -60,6 +60,24 @@ class _InvestmentPageState extends State<InvestmentPage> {
     }
   }
 
+  String _getSharesLabel(String? investmentType) {
+    switch (investmentType) {
+      case 'stock':
+      case 'etf':
+      case 'mutual-fund':
+        return "shares".tr();
+      case 'crypto':
+      case 'commodity':
+        return "amount".tr();
+      case 'bond':
+        return "units".tr();
+      case 'real-estate':
+        return "quantity".tr();
+      default:
+        return "quantity".tr();
+    }
+  }
+
   Future<void> _updatePriceFromAPI(Investment investment) async {
     if (investment.symbol == null || investment.symbol!.isEmpty) {
       openSnackbar(
@@ -177,18 +195,13 @@ class _InvestmentPageState extends State<InvestmentPage> {
                 ),
                 child: Row(
                   children: [
-                    Container(
+                    SizedBox(
                       width: 70,
                       height: 70,
-                      decoration: BoxDecoration(
-                        color:
-                            getInvestmentTypeColor(investment.investmentType),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
                       child: Center(
                         child: Text(
                           _getInvestmentTypeEmoji(investment.investmentType),
-                          style: TextStyle(fontSize: 35),
+                          style: TextStyle(fontSize: 50),
                         ),
                       ),
                     ),
@@ -783,7 +796,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
                       SizedBox(height: 16),
                       _buildDetailRow(
                         context,
-                        "shares".tr(),
+                        _getSharesLabel(investment.investmentType),
                         investment.shares.toString(),
                       ),
                       _buildDetailRow(
