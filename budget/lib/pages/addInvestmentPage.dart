@@ -740,38 +740,38 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       return false;
     }
 
-    final companion = InvestmentsCompanion(
-      investmentPk:
-          Value(_isEditing ? widget.investment!.investmentPk : uuid.v4()),
-      name: Value(_nameController.text.trim()),
-      symbol: Value(_symbolController.text.trim().isNotEmpty
-          ? _symbolController.text.trim().toUpperCase()
-          : null),
-      investmentType: Value(_selectedInvestmentType!),
-      shares: Value(_shares!),
-      purchasePrice: Value(_purchasePrice!),
-      currentPrice: Value(_currentPrice!),
-      purchaseDate: Value(_purchaseDate),
-      walletFk: Value(_selectedWalletPk ?? "0"),
-      categoryFk: Value(null),
-      colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
-          .value
-          .toRadixString(16)
-          .padLeft(8, '0')),
-      iconName: Value(null),
-      emojiIconName: Value(null),
-      pinned: Value(false),
-      archived: Value(false),
-      order: Value(_isEditing ? widget.investment!.order : 0),
-      note: Value(_noteController.text.trim().isNotEmpty
-          ? _noteController.text.trim()
-          : null),
-      dateTimeModified: Value(DateTime.now()),
-      dateCreated:
-          Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
-    );
-
     try {
+      final companion = InvestmentsCompanion(
+        investmentPk:
+            Value(_isEditing ? widget.investment!.investmentPk : uuid.v4()),
+        name: Value(_nameController.text.trim()),
+        symbol: Value(_symbolController.text.trim().isNotEmpty
+            ? _symbolController.text.trim().toUpperCase()
+            : null),
+        investmentType: Value(_selectedInvestmentType!),
+        shares: Value(_shares!),
+        purchasePrice: Value(_purchasePrice!),
+        currentPrice: Value(_currentPrice!),
+        purchaseDate: Value(_purchaseDate),
+        walletFk: Value(_selectedWalletPk ?? "0"),
+        categoryFk: Value(null),
+        colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
+            .value
+            .toRadixString(16)
+            .padLeft(8, '0')),
+        iconName: Value(null),
+        emojiIconName: Value(null),
+        pinned: Value(false),
+        archived: Value(false),
+        order: Value(_isEditing ? widget.investment!.order : 0),
+        note: Value(_noteController.text.trim().isNotEmpty
+            ? _noteController.text.trim()
+            : null),
+        dateTimeModified: Value(DateTime.now()),
+        dateCreated:
+            Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
+      );
+
       await database.createOrUpdateInvestment(
         companion,
         insert: !_isEditing,
@@ -798,6 +798,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
 
       return true;
     } catch (e) {
+      print("Error saving investment: $e");
       openSnackbar(
         SnackbarMessage(
           title: "error".tr(),
