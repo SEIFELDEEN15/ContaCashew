@@ -7,7 +7,9 @@ pagina investments:
 - card total-portfolio-value non ha alrgezza ocme altre card! inoltre indica X transazioni e non X investimenti
 
 - stile dei record della lista investimenti deve avere steso stile della lista delle transazioni in tutte le spese
-- togli debug
+- togli debug scritta in angolo in alto a destra
+- al posto di budget\assets\icon\icon.png usa budget\assets\icon\cashtrack-ico.png come icona, anche come icona app android e ios
+- al posto di budget\assets\icon\icon-small.png usa budget\assets\icon\cashtrack-ico-small.png
 
 3. Miglioramenti Suggeriti per Investments 💡
    Ecco alcuni miglioramenti che consiglio:

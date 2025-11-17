@@ -109,7 +109,7 @@ dependencies:
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/icon/icon.png"
+  image_path: "assets/icon/cashtrack-ico.png"
   min_sdk_android: 21
   web:
     generate: true

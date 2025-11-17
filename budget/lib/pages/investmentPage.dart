@@ -19,10 +19,8 @@ import 'package:budget/widgets/openSnackbar.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:drift/drift.dart' hide Column;
 
 class InvestmentPage extends StatefulWidget {
   const InvestmentPage({
@@ -161,7 +159,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
                       width: 70,
                       height: 70,
                       decoration: BoxDecoration(
-                        color: getInvestmentTypeColor(investment.investmentType),
+                        color:
+                            getInvestmentTypeColor(investment.investmentType),
                         borderRadius: BorderRadius.circular(15),
                       ),
                       child: Icon(
@@ -234,8 +233,10 @@ class _InvestmentPageState extends State<InvestmentPage> {
                         ),
                         decoration: BoxDecoration(
                           color: isGain
-                              ? getColor(context, "incomeAmount").withOpacity(0.15)
-                              : getColor(context, "expenseAmount").withOpacity(0.15),
+                              ? getColor(context, "incomeAmount")
+                                  .withOpacity(0.15)
+                              : getColor(context, "expenseAmount")
+                                  .withOpacity(0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -346,7 +347,10 @@ class _InvestmentPageState extends State<InvestmentPage> {
                   child: Container(
                     padding: EdgeInsetsDirectional.all(18),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.3),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primaryContainer
+                          .withOpacity(0.3),
                       borderRadius: BorderRadius.circular(
                         getPlatform() == PlatformOS.isIOS ? 0 : 15,
                       ),
@@ -371,7 +375,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
                             ),
                           ],
                         ),
-                        if (investment.symbol != null && investment.symbol!.isNotEmpty) ...[
+                        if (investment.symbol != null &&
+                            investment.symbol!.isNotEmpty) ...[
                           SizedBox(height: 10),
                           Row(
                             children: [
@@ -382,7 +387,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
                               ),
                               SizedBox(width: 5),
                               TextFont(
-                                text: "linked-to".tr() + ": ${investment.symbol}",
+                                text:
+                                    "linked-to".tr() + ": ${investment.symbol}",
                                 fontSize: 14,
                                 textColor: getColor(context, "textLight"),
                               ),
@@ -399,9 +405,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
                                   onTap: _isUpdatingPrice
                                       ? () {}
                                       : () => _updatePriceFromAPI(investment),
-                                  icon: _isUpdatingPrice
-                                      ? null
-                                      : Icons.refresh,
+                                  icon: _isUpdatingPrice ? null : Icons.refresh,
                                   expandedLayout: true,
                                   disabled: _isUpdatingPrice,
                                 ),
@@ -466,14 +470,16 @@ class _InvestmentPageState extends State<InvestmentPage> {
                     ),
                     SizedBox(height: 10),
                     StreamBuilder<List<InvestmentPriceHistory>>(
-                      stream: database.watchInvestmentPriceHistory(widget.investmentPk),
+                      stream: database
+                          .watchInvestmentPriceHistory(widget.investmentPk),
                       builder: (context, historySnapshot) {
                         if (!historySnapshot.hasData ||
                             historySnapshot.data!.isEmpty) {
                           return Container(
                             height: 200,
                             decoration: BoxDecoration(
-                              color: getColor(context, "lightDarkAccentHeavyLight"),
+                              color: getColor(
+                                  context, "lightDarkAccentHeavyLight"),
                               borderRadius: BorderRadius.circular(
                                 getPlatform() == PlatformOS.isIOS ? 0 : 15,
                               ),
@@ -502,7 +508,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
                         return Container(
                           height: 250,
                           decoration: BoxDecoration(
-                            color: getColor(context, "lightDarkAccentHeavyLight"),
+                            color:
+                                getColor(context, "lightDarkAccentHeavyLight"),
                             borderRadius: BorderRadius.circular(
                               getPlatform() == PlatformOS.isIOS ? 0 : 15,
                             ),
@@ -539,7 +546,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
               ),
             ),
             StreamBuilder<List<InvestmentPriceHistory>>(
-              stream: database.watchInvestmentPriceHistory(widget.investmentPk, limit: 50),
+              stream: database.watchInvestmentPriceHistory(widget.investmentPk,
+                  limit: 50),
               builder: (context, historySnapshot) {
                 if (!historySnapshot.hasData) {
                   return SliverToBoxAdapter(
@@ -558,7 +566,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
                   return SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsetsDirectional.symmetric(
-                        horizontal: getHorizontalPaddingConstrained(context) + 13,
+                        horizontal:
+                            getHorizontalPaddingConstrained(context) + 13,
                       ),
                       child: Container(
                         padding: EdgeInsets.all(30),
@@ -593,7 +602,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
 
                       if (previousPrice != null && previousPrice > 0) {
                         priceDifference = historyEntry.price - previousPrice;
-                        percentageChange = (priceDifference / previousPrice) * 100;
+                        percentageChange =
+                            (priceDifference / previousPrice) * 100;
                         isIncrease = priceDifference >= 0;
                       }
 
@@ -605,14 +615,16 @@ class _InvestmentPageState extends State<InvestmentPage> {
                         ),
                         child: Tappable(
                           color: getColor(context, "lightDarkAccentHeavyLight"),
-                          borderRadius: getPlatform() == PlatformOS.isIOS ? 0 : 12,
+                          borderRadius:
+                              getPlatform() == PlatformOS.isIOS ? 0 : 12,
                           child: Padding(
                             padding: EdgeInsetsDirectional.all(15),
                             child: Row(
                               children: [
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -627,41 +639,52 @@ class _InvestmentPageState extends State<InvestmentPage> {
                                           if (isIncrease != null) ...[
                                             SizedBox(width: 10),
                                             Container(
-                                              padding: EdgeInsetsDirectional.symmetric(
+                                              padding: EdgeInsetsDirectional
+                                                  .symmetric(
                                                 horizontal: 8,
                                                 vertical: 4,
                                               ),
                                               decoration: BoxDecoration(
                                                 color: isIncrease
-                                                    ? getColor(context, "incomeAmount")
+                                                    ? getColor(context,
+                                                            "incomeAmount")
                                                         .withOpacity(0.15)
-                                                    : getColor(context, "expenseAmount")
+                                                    : getColor(context,
+                                                            "expenseAmount")
                                                         .withOpacity(0.15),
-                                                borderRadius: BorderRadius.circular(8),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                               child: Row(
                                                 mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   Icon(
                                                     isIncrease
-                                                        ? Icons.arrow_upward_rounded
-                                                        : Icons.arrow_downward_rounded,
+                                                        ? Icons
+                                                            .arrow_upward_rounded
+                                                        : Icons
+                                                            .arrow_downward_rounded,
                                                     size: 12,
                                                     color: isIncrease
-                                                        ? getColor(context, "incomeAmount")
-                                                        : getColor(context, "expenseAmount"),
+                                                        ? getColor(context,
+                                                            "incomeAmount")
+                                                        : getColor(context,
+                                                            "expenseAmount"),
                                                   ),
                                                   SizedBox(width: 3),
                                                   TextFont(
                                                     text: percentageChange!
-                                                        .abs()
-                                                        .toStringAsFixed(1) +
+                                                            .abs()
+                                                            .toStringAsFixed(
+                                                                1) +
                                                         "%",
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.bold,
                                                     textColor: isIncrease
-                                                        ? getColor(context, "incomeAmount")
-                                                        : getColor(context, "expenseAmount"),
+                                                        ? getColor(context,
+                                                            "incomeAmount")
+                                                        : getColor(context,
+                                                            "expenseAmount"),
                                                   ),
                                                 ],
                                               ),
@@ -671,18 +694,23 @@ class _InvestmentPageState extends State<InvestmentPage> {
                                       ),
                                       SizedBox(height: 5),
                                       TextFont(
-                                        text: getWordedDateShort(historyEntry.date),
+                                        text: getWordedDateShort(
+                                            historyEntry.date),
                                         fontSize: 14,
-                                        textColor: getColor(context, "textLight"),
+                                        textColor:
+                                            getColor(context, "textLight"),
                                       ),
                                       if (historyEntry.note != null &&
                                           historyEntry.note!.isNotEmpty)
                                         Padding(
-                                          padding: const EdgeInsetsDirectional.only(top: 5),
+                                          padding:
+                                              const EdgeInsetsDirectional.only(
+                                                  top: 5),
                                           child: TextFont(
                                             text: historyEntry.note!,
                                             fontSize: 13,
-                                            textColor: getColor(context, "textLight"),
+                                            textColor:
+                                                getColor(context, "textLight"),
                                             maxLines: 2,
                                           ),
                                         ),

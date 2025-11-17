@@ -11,7 +11,6 @@ import 'package:budget/struct/languageMap.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/framework/popupFramework.dart';
-import 'package:budget/widgets/moreIcons.dart';
 import 'package:budget/widgets/navigationSidebar.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openPopup.dart';
@@ -51,7 +50,7 @@ class AboutPageState extends State<AboutPage> {
       runSpacing: 10,
       children: [
         Image(
-          image: AssetImage("assets/icon/icon-small.png"),
+          image: AssetImage("assets/icon/cashtrack-ico-small.png"),
           height: 70,
         ),
         Column(
