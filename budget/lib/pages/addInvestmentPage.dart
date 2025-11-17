@@ -294,7 +294,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsetsDirectional.symmetric(
-              horizontal: getHorizontalPaddingConstrained(context),
+              horizontal: getHorizontalPaddingConstrained(context) + 13,
             ),
             child: Column(
               children: [
@@ -756,8 +756,6 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       );
     }
 
-    Navigator.pop(context);
-
     openSnackbar(
       SnackbarMessage(
         title:
@@ -765,6 +763,8 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
         icon: Icons.check,
       ),
     );
+
+    Navigator.of(context).pop();
   }
 
   Future<void> _deleteInvestment() async {

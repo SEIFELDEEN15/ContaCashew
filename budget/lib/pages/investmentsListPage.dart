@@ -396,13 +396,7 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
             SizedBox(height: 10),
             Padding(
               padding: const EdgeInsetsDirectional.only(bottom: 13),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(child: totalPortfolioContainer),
-                ],
-              ),
+              child: totalPortfolioContainer,
             ),
           ],
         ),

@@ -38,6 +38,28 @@ class _InvestmentPageState extends State<InvestmentPage> {
   final InvestmentPriceService _priceService = InvestmentPriceService();
   bool _isUpdatingPrice = false;
 
+  String _getInvestmentTypeEmoji(String? key) {
+    switch (key) {
+      case 'stock':
+        return "📈";
+      case 'etf':
+        return "📊";
+      case 'crypto':
+        return "₿";
+      case 'bond':
+        return "💰";
+      case 'real-estate':
+        return "🏠";
+      case 'commodity':
+        return "💎";
+      case 'mutual-fund':
+        return "🥧";
+      case 'other':
+      default:
+        return "📌";
+    }
+  }
+
   Future<void> _updatePriceFromAPI(Investment investment) async {
     if (investment.symbol == null || investment.symbol!.isEmpty) {
       openSnackbar(
@@ -163,10 +185,11 @@ class _InvestmentPageState extends State<InvestmentPage> {
                             getInvestmentTypeColor(investment.investmentType),
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      child: Icon(
-                        getInvestmentTypeIcon(investment.investmentType),
-                        color: Colors.white,
-                        size: 35,
+                      child: Center(
+                        child: Text(
+                          _getInvestmentTypeEmoji(investment.investmentType),
+                          style: TextStyle(fontSize: 35),
+                        ),
                       ),
                     ),
                     SizedBox(width: 15),

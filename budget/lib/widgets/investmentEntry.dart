@@ -29,6 +29,28 @@ class InvestmentEntry extends StatelessWidget {
   final Function(Investment, bool)? onSelected;
   final bool useHorizontalPaddingConstrained;
 
+  String _getInvestmentTypeEmoji(String? key) {
+    switch (key) {
+      case 'stock':
+        return "📈";
+      case 'etf':
+        return "📊";
+      case 'crypto':
+        return "₿";
+      case 'bond':
+        return "💰";
+      case 'real-estate':
+        return "🏠";
+      case 'commodity':
+        return "💎";
+      case 'mutual-fund':
+        return "🥧";
+      case 'other':
+      default:
+        return "📌";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentValue = investment.shares * investment.currentPrice;
@@ -88,10 +110,11 @@ class InvestmentEntry extends StatelessWidget {
                             color: getInvestmentTypeColor(investment.investmentType),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(
-                            getInvestmentTypeIcon(investment.investmentType),
-                            color: Colors.white,
-                            size: 25,
+                          child: Center(
+                            child: Text(
+                              _getInvestmentTypeEmoji(investment.investmentType),
+                              style: TextStyle(fontSize: 25),
+                            ),
                           ),
                         ),
                   SizedBox(width: 13),
