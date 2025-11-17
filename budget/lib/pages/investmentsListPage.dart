@@ -332,55 +332,75 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
           horizontal: getHorizontalPaddingConstrained(context) + 13),
       child: StreamBuilder<Map<String, double>>(
         stream: database.watchPortfolioSummary(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
+        builder: (context, investmentSummarySnapshot) {
+          if (!investmentSummarySnapshot.hasData) {
             return SizedBox.shrink();
           }
-          final summary = snapshot.data!;
-          final totalValue = summary['totalValue'] ?? 0;
-          final gainLoss = summary['gainLoss'] ?? 0;
-          final gainLossPercentage = summary['gainLossPercentage'] ?? 0;
+          final investmentSummary = investmentSummarySnapshot.data!;
+          final investmentValue = investmentSummary['totalValue'] ?? 0;
+          final investmentCost = investmentSummary['totalCost'] ?? 0;
 
           return StreamBuilder<List<Investment>>(
             stream: database.watchAllInvestments(hideArchived: true),
             builder: (context, investmentsSnapshot) {
               final investmentCount = investmentsSnapshot.data?.length ?? 0;
 
-              return Column(
-                children: [
-                  TransactionsAmountBox(
-                    onLongPress: () {
-                      selectPeriod();
-                    },
-                    label: "total-portfolio-value".tr(),
-                    getTextColor: (double amount) {
-                      return getColor(context, "black");
-                    },
-                    absolute: false,
-                    totalWithCountStream: Stream.value(
-                      TotalWithCount(
-                        total: totalValue,
-                        count: investmentCount,
+              return StreamBuilder<List<WalletWithDetails>>(
+                stream: database.watchAllWalletsWithDetails(),
+                builder: (context, walletsSnapshot) {
+                  bool includeAccounts =
+                      appStateSettings["includeAccountsInInvestments"] ?? true;
+
+                  double walletsTotal = 0;
+                  if (includeAccounts && walletsSnapshot.hasData) {
+                    for (var wallet in walletsSnapshot.data!) {
+                      walletsTotal += wallet.totalSpent ?? 0;
+                    }
+                  }
+
+                  final totalValue = investmentValue + walletsTotal;
+                  final gainLoss = investmentValue - investmentCost;
+                  final gainLossPercentage = investmentCost > 0
+                      ? (gainLoss / investmentCost) * 100
+                      : 0;
+
+                  return Column(
+                    children: [
+                      TransactionsAmountBox(
+                        onLongPress: () {
+                          selectPeriod();
+                        },
+                        label: "total-portfolio-value".tr(),
+                        getTextColor: (double amount) {
+                          return getColor(context, "black");
+                        },
+                        absolute: false,
+                        totalWithCountStream: Stream.value(
+                          TotalWithCount(
+                            total: totalValue,
+                            count: investmentCount,
+                          ),
+                        ),
+                        textColor: getColor(context, "black"),
+                        countLabel: "investment".tr(),
+                        countLabelPlural: "investments".tr(),
                       ),
-                    ),
-                    textColor: getColor(context, "black"),
-                    countLabel: "investment".tr(),
-                    countLabelPlural: "investments".tr(),
-                  ),
-                  if (gainLoss != 0)
-                    Padding(
-                      padding: const EdgeInsetsDirectional.only(top: 8),
-                      child: TextFont(
-                        text:
-                            "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        textColor: gainLoss >= 0
-                            ? getColor(context, "incomeAmount")
-                            : getColor(context, "expenseAmount"),
-                      ),
-                    ),
-                ],
+                      if (gainLoss != 0)
+                        Padding(
+                          padding: const EdgeInsetsDirectional.only(top: 8),
+                          child: TextFont(
+                            text:
+                                "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            textColor: gainLoss >= 0
+                                ? getColor(context, "incomeAmount")
+                                : getColor(context, "expenseAmount"),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               );
             },
           );
@@ -396,13 +416,7 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
             SizedBox(height: 10),
             Padding(
               padding: const EdgeInsetsDirectional.only(bottom: 13),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(child: totalPortfolioContainer),
-                ],
-              ),
+              child: totalPortfolioContainer,
             ),
           ],
         ),
@@ -493,6 +507,172 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
           );
         },
       ),
+      // Bank Accounts Section
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsetsDirectional.symmetric(
+            horizontal: getHorizontalPaddingConstrained(context) + 13,
+            vertical: 10,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "accounts".tr(),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Row(
+                children: [
+                  TextFont(
+                    text: "include-in-stats".tr(),
+                    fontSize: 14,
+                    textColor: getColor(context, "textLight"),
+                  ),
+                  Transform.scale(
+                    scale: 0.9,
+                    child: Switch(
+                      value: appStateSettings["includeAccountsInInvestments"] ??
+                          true,
+                      onChanged: (value) async {
+                        await updateSettings(
+                          "includeAccountsInInvestments",
+                          value,
+                          updateGlobalState: true,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+      StreamBuilder<List<WalletWithDetails>>(
+        stream: database.watchAllWalletsWithDetails(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.all(20),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            );
+          }
+
+          List<WalletWithDetails> wallets = snapshot.data ?? [];
+
+          if (wallets.isEmpty) {
+            return SliverToBoxAdapter(
+              child: Container(
+                padding: EdgeInsets.all(40),
+                child: Center(
+                  child: Text(
+                    "no-accounts".tr(),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+
+          return SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final walletWithDetails = wallets[index];
+
+                return Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    start: getHorizontalPaddingConstrained(context) + 13,
+                    end: getHorizontalPaddingConstrained(context) + 13,
+                    bottom: 7,
+                  ),
+                  child: Tappable(
+                    color: getColor(context, "lightDarkAccentHeavyLight"),
+                    borderRadius: getPlatform() == PlatformOS.isIOS ? 0 : 15,
+                    child: Padding(
+                      padding: EdgeInsetsDirectional.symmetric(
+                        horizontal: 18,
+                        vertical: 14,
+                      ),
+                      child: Row(
+                        children: [
+                          // Icon
+                          Container(
+                            width: 50,
+                            height: 50,
+                            decoration: BoxDecoration(
+                              color: HexColor(walletWithDetails.wallet.colour,
+                                  defaultColor:
+                                      Theme.of(context).colorScheme.primary),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                walletWithDetails.wallet.iconName ?? "💰",
+                                style: TextStyle(fontSize: 25),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 13),
+                          // Content
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                TextFont(
+                                  text: walletWithDetails.wallet.name,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                SizedBox(height: 2),
+                                TextFont(
+                                  text: (walletWithDetails.numberTransactions ??
+                                              0)
+                                          .toString() +
+                                      " " +
+                                      ((walletWithDetails.numberTransactions ??
+                                                  0) ==
+                                              1
+                                          ? "transaction".tr()
+                                          : "transactions".tr()),
+                                  fontSize: 14,
+                                  textColor: getColor(context, "textLight"),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          // Balance
+                          TextFont(
+                            text: convertToMoney(
+                              Provider.of<AllWallets>(context),
+                              walletWithDetails.totalSpent ?? 0,
+                            ),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+              childCount: wallets.length,
+            ),
+          );
+        },
+      ),
       SliverToBoxAdapter(
         child: SizedBox(height: 20),
       ),
@@ -548,25 +728,38 @@ class InvestmentsPieChartSection extends StatelessWidget {
     return StreamBuilder<List<Investment>>(
       stream: database.watchAllInvestments(hideArchived: true),
       builder: (context, investmentsSnapshot) {
-        if (!investmentsSnapshot.hasData ||
-            investmentsSnapshot.data!.isEmpty) {
-          return SliverToBoxAdapter(child: SizedBox.shrink());
-        }
+        return StreamBuilder<List<WalletWithDetails>>(
+          stream: database.watchAllWalletsWithDetails(),
+          builder: (context, walletsSnapshot) {
+            final Map<String?, double> typeTotals = {};
 
-        final investments = investmentsSnapshot.data!;
-        final Map<String?, double> typeTotals = {};
+            // Add investments
+            if (investmentsSnapshot.hasData) {
+              for (var inv in investmentsSnapshot.data!) {
+                final value = inv.shares * inv.currentPrice;
+                typeTotals[inv.investmentType] =
+                    (typeTotals[inv.investmentType] ?? 0) + value;
+              }
+            }
 
-        for (var inv in investments) {
-          final value = inv.shares * inv.currentPrice;
-          typeTotals[inv.investmentType] =
-              (typeTotals[inv.investmentType] ?? 0) + value;
-        }
+            // Add bank accounts if toggle is ON
+            bool includeAccounts =
+                appStateSettings["includeAccountsInInvestments"] ?? true;
+            if (includeAccounts && walletsSnapshot.hasData) {
+              double totalWallets = 0;
+              for (var wallet in walletsSnapshot.data!) {
+                totalWallets += wallet.totalSpent ?? 0;
+              }
+              if (totalWallets > 0) {
+                typeTotals["bank-account"] = totalWallets;
+              }
+            }
 
-        if (typeTotals.isEmpty) {
-          return SliverToBoxAdapter(child: SizedBox.shrink());
-        }
+            if (typeTotals.isEmpty) {
+              return SliverToBoxAdapter(child: SizedBox.shrink());
+            }
 
-        final total = typeTotals.values.fold<double>(0, (a, b) => a + b);
+            final total = typeTotals.values.fold<double>(0, (a, b) => a + b);
 
         // Map investment type keys to emoji icons
         String getInvestmentTypeEmoji(String? key) {
@@ -585,6 +778,8 @@ class InvestmentsPieChartSection extends StatelessWidget {
               return "💎";
             case 'mutual-fund':
               return "🥧";
+            case 'bank-account':
+              return "🏦";
             case 'other':
             default:
               return "📌";
@@ -756,6 +951,8 @@ class InvestmentsPieChartSection extends StatelessWidget {
               ],
             ),
           ),
+        );
+          },
         );
       },
     );

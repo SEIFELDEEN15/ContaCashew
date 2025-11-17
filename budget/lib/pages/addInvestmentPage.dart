@@ -49,6 +49,24 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
 
   bool _isEditing = false;
 
+  String _getSharesLabel() {
+    switch (_selectedInvestmentType) {
+      case 'stock':
+      case 'etf':
+      case 'mutual-fund':
+        return "shares".tr();
+      case 'crypto':
+      case 'commodity':
+        return "amount".tr();
+      case 'bond':
+        return "units".tr();
+      case 'real-estate':
+        return "quantity".tr();
+      default:
+        return "quantity".tr();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,7 +108,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       context,
       fullSnap: true,
       PopupFramework(
-        title: "shares".tr(),
+        title: _getSharesLabel(),
         hasPadding: false,
         underTitleSpace: false,
         child: SelectAmount(
@@ -294,7 +312,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: EdgeInsetsDirectional.symmetric(
-              horizontal: getHorizontalPaddingConstrained(context),
+              horizontal: getHorizontalPaddingConstrained(context) + 13,
             ),
             child: Column(
               children: [
@@ -456,7 +474,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 TextFont(
-                                  text: "shares".tr(),
+                                  text: _getSharesLabel(),
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -652,7 +670,10 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                         label: _isEditing
                             ? "save-changes".tr()
                             : "add-investment".tr(),
-                        onTap: _saveInvestment,
+                        onTap: () async {
+                          bool result = await _saveInvestment();
+                          if (result) popRoute(context);
+                        },
                         expandedLayout: true,
                       ),
                     ),
@@ -667,46 +688,22 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     );
   }
 
-  Future<void> _saveInvestment() async {
+  Future<bool> _saveInvestment() async {
     // Validation
     if (_nameController.text.trim().isEmpty) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "investment-name-required".tr(),
-          icon: Icons.warning,
-        ),
-      );
-      return;
+      return false;
     }
-
+    if (_selectedInvestmentType == null) {
+      return false;
+    }
     if (_shares == null || _shares! <= 0) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "please-enter-shares".tr(),
-          icon: Icons.warning,
-        ),
-      );
-      return;
+      return false;
     }
-
     if (_purchasePrice == null || _purchasePrice! < 0) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "please-enter-purchase-price".tr(),
-          icon: Icons.warning,
-        ),
-      );
-      return;
+      return false;
     }
-
     if (_currentPrice == null || _currentPrice! < 0) {
-      openSnackbar(
-        SnackbarMessage(
-          title: "please-enter-current-price".tr(),
-          icon: Icons.warning,
-        ),
-      );
-      return;
+      return false;
     }
 
     final companion = InvestmentsCompanion(
@@ -716,14 +713,14 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       symbol: Value(_symbolController.text.trim().isNotEmpty
           ? _symbolController.text.trim().toUpperCase()
           : null),
-      investmentType: Value(_selectedInvestmentType),
+      investmentType: Value(_selectedInvestmentType!),
       shares: Value(_shares!),
       purchasePrice: Value(_purchasePrice!),
       currentPrice: Value(_currentPrice!),
       purchaseDate: Value(_purchaseDate),
       walletFk: Value(_selectedWalletPk ?? "0"),
       categoryFk: Value(null),
-      colour: Value(getInvestmentTypeColor(_selectedInvestmentType)
+      colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
           .value
           .toRadixString(16)
           .padLeft(8, '0')),
@@ -756,15 +753,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       );
     }
 
-    Navigator.pop(context);
-
-    openSnackbar(
-      SnackbarMessage(
-        title:
-            _isEditing ? "investment-updated".tr() : "investment-created".tr(),
-        icon: Icons.check,
-      ),
-    );
+    return true;
   }
 
   Future<void> _deleteInvestment() async {

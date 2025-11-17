@@ -37,6 +37,46 @@ class _InvestmentPageState extends State<InvestmentPage> {
   final InvestmentPriceService _priceService = InvestmentPriceService();
   bool _isUpdatingPrice = false;
 
+  String _getInvestmentTypeEmoji(String? key) {
+    switch (key) {
+      case 'stock':
+        return "📈";
+      case 'etf':
+        return "📊";
+      case 'crypto':
+        return "₿";
+      case 'bond':
+        return "💰";
+      case 'real-estate':
+        return "🏠";
+      case 'commodity':
+        return "💎";
+      case 'mutual-fund':
+        return "🥧";
+      case 'other':
+      default:
+        return "📌";
+    }
+  }
+
+  String _getSharesLabel(String? investmentType) {
+    switch (investmentType) {
+      case 'stock':
+      case 'etf':
+      case 'mutual-fund':
+        return "shares".tr();
+      case 'crypto':
+      case 'commodity':
+        return "amount".tr();
+      case 'bond':
+        return "units".tr();
+      case 'real-estate':
+        return "quantity".tr();
+      default:
+        return "quantity".tr();
+    }
+  }
+
   Future<void> _updatePriceFromAPI(Investment investment) async {
     if (investment.symbol == null || investment.symbol!.isEmpty) {
       openSnackbar(
@@ -116,7 +156,9 @@ class _InvestmentPageState extends State<InvestmentPage> {
         final isGain = gainLoss >= 0;
 
         return PageFramework(
-          title: investment.name,
+          title: _getInvestmentTypeEmoji(investment.investmentType) +
+              " " +
+              investment.name,
           dragDownToDismiss: true,
           actions: [
             IconButton(
@@ -145,54 +187,6 @@ class _InvestmentPageState extends State<InvestmentPage> {
             ),
           ),
           slivers: [
-            // Header with icon
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context) + 13,
-                  vertical: 15,
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        color:
-                            getInvestmentTypeColor(investment.investmentType),
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Icon(
-                        getInvestmentTypeIcon(investment.investmentType),
-                        color: Colors.white,
-                        size: 35,
-                      ),
-                    ),
-                    SizedBox(width: 15),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextFont(
-                            text: investment.name,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            maxLines: 2,
-                          ),
-                          if (investment.symbol != null)
-                            TextFont(
-                              text: investment.symbol!,
-                              fontSize: 16,
-                              textColor: getColor(context, "textLight"),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
             // Current Value Card
             SliverToBoxAdapter(
               child: Padding(
@@ -759,7 +753,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
                       SizedBox(height: 16),
                       _buildDetailRow(
                         context,
-                        "shares".tr(),
+                        _getSharesLabel(investment.investmentType),
                         investment.shares.toString(),
                       ),
                       _buildDetailRow(
