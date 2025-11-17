@@ -21,7 +21,7 @@ This is a modified version of the original "Cashew" application.
 The following changes have been made to the original work:
 
 - Complete rebranding from "Cashew" to "CashTrack"
-- Package name changed from com.budget.tracker_app to com.eliazavatta.CashTrack
+- Package name changed from com.budget.tracker_app to com.eliazavatta.contaspicci
 - Application name changed in all user-facing interfaces
 - Updated Android and iOS bundle identifiers
 - Removed links to original project's website and support channels

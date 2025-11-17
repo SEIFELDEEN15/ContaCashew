@@ -7,7 +7,7 @@
 Questa è una **versione modificata** del progetto originale Cashew. Le modifiche includono:
 
 - Rebranding completo da "Cashew" a "CashTrack"
-- Package name cambiato da `com.budget.tracker_app` a `com.eliazavatta.CashTrack`
+- Package name cambiato da `com.budget.tracker_app` a `com.eliazavatta.contaspicci`
 - Personalizzazioni e modifiche specifiche per l'utente finale
 
 ## 📜 Licenza
