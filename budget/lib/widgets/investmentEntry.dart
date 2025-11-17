@@ -125,7 +125,8 @@ class InvestmentEntry extends StatelessWidget {
                           height: 50,
                           child: Center(
                             child: Text(
-                              _getInvestmentTypeEmoji(investment.investmentType),
+                              _getInvestmentTypeEmoji(
+                                  investment.investmentType),
                               style: TextStyle(fontSize: 30),
                             ),
                           ),
