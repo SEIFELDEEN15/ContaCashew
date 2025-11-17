@@ -38,11 +38,14 @@ class InvestmentEntry extends StatelessWidget {
     final isGain = gainLoss >= 0;
 
     return Padding(
-      padding: EdgeInsetsDirectional.symmetric(
-        horizontal: useHorizontalPaddingConstrained
-            ? getHorizontalPaddingConstrained(context)
+      padding: EdgeInsetsDirectional.only(
+        start: useHorizontalPaddingConstrained
+            ? getHorizontalPaddingConstrained(context) + 13
             : 13,
-        vertical: 4,
+        end: useHorizontalPaddingConstrained
+            ? getHorizontalPaddingConstrained(context) + 13
+            : 13,
+        bottom: 7,
       ),
       child: OpenContainerNavigation(
         borderRadius: getPlatform() == PlatformOS.isIOS ? 0 : 15,

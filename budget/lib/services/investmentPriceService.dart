@@ -176,13 +176,18 @@ class YahooFinanceProvider implements PriceProvider {
   Future<PriceFetchResult> fetchPrice(String symbol, {String currency = 'USD'}) async {
     try {
       final url = '$_baseUrl/chart/$symbol?interval=1d&range=1d';
-      final response = await http.get(Uri.parse(url)).timeout(
-        Duration(seconds: 10),
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
+      ).timeout(
+        Duration(seconds: 15),
       );
 
       if (response.statusCode != 200) {
         return PriceFetchResult(
-          error: 'Failed to fetch price: ${response.statusCode}',
+          error: 'Failed to fetch price: HTTP ${response.statusCode}',
           timestamp: DateTime.now(),
         );
       }
@@ -224,12 +229,18 @@ class YahooFinanceProvider implements PriceProvider {
   @override
   Future<List<PriceSearchResult>> searchSymbol(String query) async {
     try {
-      final url = 'https://query1.finance.yahoo.com/v1/finance/search?q=$query&quotesCount=10';
-      final response = await http.get(Uri.parse(url)).timeout(
-        Duration(seconds: 10),
+      final url = 'https://query1.finance.yahoo.com/v1/finance/search?q=${Uri.encodeComponent(query)}&quotesCount=10';
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        },
+      ).timeout(
+        Duration(seconds: 15),
       );
 
       if (response.statusCode != 200) {
+        print('Error searching Yahoo Finance: HTTP ${response.statusCode}');
         return [];
       }
 

@@ -328,57 +328,54 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
 
     // Total portfolio value widget
     Widget totalPortfolioContainer = Padding(
-      padding: const EdgeInsetsDirectional.symmetric(horizontal: 13),
-      child: Padding(
-        padding: EdgeInsetsDirectional.symmetric(
-            horizontal: getHorizontalPaddingConstrained(context)),
-        child: StreamBuilder<Map<String, double>>(
-          stream: database.watchPortfolioSummary(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return SizedBox.shrink();
-            }
-            final summary = snapshot.data!;
-            final totalValue = summary['totalValue'] ?? 0;
-            final gainLoss = summary['gainLoss'] ?? 0;
-            final gainLossPercentage = summary['gainLossPercentage'] ?? 0;
+      padding: EdgeInsetsDirectional.symmetric(
+          horizontal: getHorizontalPaddingConstrained(context) + 13),
+      child: StreamBuilder<Map<String, double>>(
+        stream: database.watchPortfolioSummary(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return SizedBox.shrink();
+          }
+          final summary = snapshot.data!;
+          final totalValue = summary['totalValue'] ?? 0;
+          final gainLoss = summary['gainLoss'] ?? 0;
+          final gainLossPercentage = summary['gainLossPercentage'] ?? 0;
 
-            return Column(
-              children: [
-                TransactionsAmountBox(
-                  onLongPress: () {
-                    selectPeriod();
-                  },
-                  label: "total-portfolio-value".tr(),
-                  getTextColor: (double amount) {
-                    return getColor(context, "black");
-                  },
-                  absolute: false,
-                  totalWithCountStream: Stream.value(
-                    TotalWithCount(
-                      total: totalValue,
-                      count: 0,
-                    ),
+          return Column(
+            children: [
+              TransactionsAmountBox(
+                onLongPress: () {
+                  selectPeriod();
+                },
+                label: "total-portfolio-value".tr(),
+                getTextColor: (double amount) {
+                  return getColor(context, "black");
+                },
+                absolute: false,
+                totalWithCountStream: Stream.value(
+                  TotalWithCount(
+                    total: totalValue,
+                    count: 0,
                   ),
-                  textColor: getColor(context, "black"),
                 ),
-                if (gainLoss != 0)
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(top: 8),
-                    child: TextFont(
-                      text:
-                          "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      textColor: gainLoss >= 0
-                          ? getColor(context, "incomeAmount")
-                          : getColor(context, "expenseAmount"),
-                    ),
+                textColor: getColor(context, "black"),
+              ),
+              if (gainLoss != 0)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(top: 8),
+                  child: TextFont(
+                    text:
+                        "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    textColor: gainLoss >= 0
+                        ? getColor(context, "incomeAmount")
+                        : getColor(context, "expenseAmount"),
                   ),
-              ],
-            );
-          },
-        ),
+                ),
+            ],
+          );
+        },
       ),
     );
 
@@ -476,15 +473,10 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
             delegate: SliverChildBuilderDelegate(
               (context, index) {
                 final investment = investments[index];
-                return Padding(
-                  padding: EdgeInsetsDirectional.only(
-                    bottom: 7,
-                  ),
-                  child: InvestmentEntry(
-                    investment: investment,
-                    listID: listID,
-                    useHorizontalPaddingConstrained: true,
-                  ),
+                return InvestmentEntry(
+                  investment: investment,
+                  listID: listID,
+                  useHorizontalPaddingConstrained: true,
                 );
               },
               childCount: investments.length,
@@ -566,6 +558,30 @@ class InvestmentsPieChartSection extends StatelessWidget {
         }
 
         final total = typeTotals.values.fold<double>(0, (a, b) => a + b);
+
+        // Map investment type keys to emoji icons
+        String getInvestmentTypeEmoji(String? key) {
+          switch (key) {
+            case 'stock':
+              return "📈";
+            case 'etf':
+              return "📊";
+            case 'crypto':
+              return "₿";
+            case 'bond':
+              return "💰";
+            case 'real-estate':
+              return "🏠";
+            case 'commodity':
+              return "💎";
+            case 'mutual-fund':
+              return "🥧";
+            case 'other':
+            default:
+              return "📌";
+          }
+        }
+
         List<CategoryWithTotal> pieChartData = typeTotals.entries
             .map((e) => CategoryWithTotal(
                   category: TransactionCategory(
@@ -578,7 +594,7 @@ class InvestmentsPieChartSection extends StatelessWidget {
                             .padLeft(8, '0')
                             .substring(2),
                     iconName: "",
-                    emojiIconName: "📊",
+                    emojiIconName: getInvestmentTypeEmoji(e.key),
                     dateCreated: DateTime.now(),
                     dateTimeModified: null,
                     order: 0,

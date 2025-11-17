@@ -224,17 +224,17 @@ class _CyclePeriodSelectionState extends State<CyclePeriodSelection> {
         appStateSettings["cyclePeriodLength" + widget.cycleSettingsExtension] ??
             1;
     selectedStartDate = DateTime.tryParse(appStateSettings[
-            "cycleStartDate" + widget.cycleSettingsExtension]) ??
+            "cycleStartDate" + widget.cycleSettingsExtension] ?? "") ??
         DateTime.now().firstDayOfMonth();
     selectedRecurrence = enumRecurrence[BudgetReoccurence.values[
             appStateSettings[
-                "cycleReoccurrence" + widget.cycleSettingsExtension]]] ??
+                "cycleReoccurrence" + widget.cycleSettingsExtension] ?? 0]] ??
         "Monthly";
 
     if (selectedPeriodLength == 1) {
-      selectedRecurrenceDisplay = nameRecurrence[selectedRecurrence];
+      selectedRecurrenceDisplay = nameRecurrence[selectedRecurrence] ?? "month";
     } else {
-      selectedRecurrenceDisplay = namesRecurrence[selectedRecurrence];
+      selectedRecurrenceDisplay = namesRecurrence[selectedRecurrence] ?? "months";
     }
     super.initState();
   }

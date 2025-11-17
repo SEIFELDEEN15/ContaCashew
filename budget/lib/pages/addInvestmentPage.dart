@@ -167,6 +167,124 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     );
   }
 
+  Future<void> _searchAndLinkSymbol() async {
+    final priceService = InvestmentPriceService();
+    final provider = priceService.getProviderForType(_selectedInvestmentType);
+
+    if (provider == null) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "no-provider-available".tr(),
+          icon: Icons.warning,
+        ),
+      );
+      return;
+    }
+
+    // Search for symbols
+    final searchQuery = _symbolController.text.trim().isEmpty
+        ? _nameController.text.trim()
+        : _symbolController.text.trim();
+
+    if (searchQuery.isEmpty) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "enter-symbol-or-name".tr(),
+          icon: Icons.warning,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final results = await provider.searchSymbol(searchQuery);
+
+      if (results.isEmpty) {
+        openSnackbar(
+          SnackbarMessage(
+            title: "no-results-found".tr(),
+            icon: Icons.info,
+          ),
+        );
+        return;
+      }
+
+      // Show results in a bottom sheet
+      await openBottomSheet(
+        context,
+        PopupFramework(
+          title: "select-symbol".tr(),
+          child: Column(
+            children: results.map((result) {
+              return Tappable(
+                onTap: () {
+                  setState(() {
+                    _symbolController.text = result.symbol;
+                  });
+                  Navigator.pop(context);
+                  openSnackbar(
+                    SnackbarMessage(
+                      title: "symbol-linked".tr(),
+                      description: result.symbol,
+                      icon: Icons.check,
+                    ),
+                  );
+                },
+                color: getColor(context, "lightDarkAccentHeavyLight"),
+                borderRadius: 15,
+                child: Padding(
+                  padding: EdgeInsetsDirectional.all(15),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextFont(
+                              text: result.symbol,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            SizedBox(height: 3),
+                            TextFont(
+                              text: result.name,
+                              fontSize: 14,
+                              textColor: getColor(context, "textLight"),
+                            ),
+                            if (result.description != null &&
+                                result.description!.isNotEmpty)
+                              TextFont(
+                                text: result.description!,
+                                fontSize: 12,
+                                textColor: getColor(context, "textLight"),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        appStateSettings["outlinedIcons"]
+                            ? Icons.chevron_right_outlined
+                            : Icons.chevron_right_rounded,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      );
+    } catch (e) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "error-searching".tr(),
+          description: e.toString(),
+          icon: Icons.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return PageFramework(
@@ -202,8 +320,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                         padding: EdgeInsetsDirectional.zero,
                       ),
                     ),
-                    if (_isEditing &&
-                        InvestmentPriceService()
+                    if (InvestmentPriceService()
                                 .getProviderForType(_selectedInvestmentType) !=
                             null) ...[
                       SizedBox(width: 10),
@@ -212,21 +329,26 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                         child: Button(
                           label: "search".tr(),
                           onTap: () async {
-                            final result = await pushRoute(
-                              context,
-                              LinkInvestmentTickerPage(
-                                investment: widget.investment!,
-                              ),
-                            );
-                            if (result == true) {
-                              // Refresh symbol
-                              final updated = await database
-                                  .getInvestment(
-                                      widget.investment!.investmentPk)
-                                  .first;
-                              setState(() {
-                                _symbolController.text = updated.symbol ?? "";
-                              });
+                            if (_isEditing) {
+                              final result = await pushRoute(
+                                context,
+                                LinkInvestmentTickerPage(
+                                  investment: widget.investment!,
+                                ),
+                              );
+                              if (result == true) {
+                                // Refresh symbol
+                                final updated = await database
+                                    .getInvestment(
+                                        widget.investment!.investmentPk)
+                                    .first;
+                                setState(() {
+                                  _symbolController.text = updated.symbol ?? "";
+                                });
+                              }
+                            } else {
+                              // For new investments, search for symbols
+                              await _searchAndLinkSymbol();
                             }
                           },
                           icon: Icons.search,
