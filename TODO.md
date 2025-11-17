@@ -7,3 +7,36 @@ pagina investments:
 - card total-portfolio-value non ha alrgezza ocme altre card! inoltre indica X transazioni e non X investimenti
 
 - stile dei record della lista investimenti deve avere steso stile della lista delle transazioni in tutte le spese
+- togli debug
+
+3. Miglioramenti Suggeriti per Investments 💡
+   Ecco alcuni miglioramenti che consiglio:
+
+A. Grafici e Analytics
+
+Aggiungere grafico performance nel tempo (line chart)
+Mostrare diversificazione portafoglio (già c'è il pie chart)
+Aggiungere filtri per categoria di investimento
+B. Funzionalità
+
+Dividendi: tracciare dividendi ricevuti
+Export: esportare storico investimenti in CSV/Excel
+Notifiche: alert quando un investimento sale/scende del X%
+Benchmark: confrontare performance con indici di mercato (S&P500, ecc.)
+C. UX/UI
+
+Swipe-to-delete su investment entries
+Ordinamento investimenti (per valore, performance, data)
+Filtri avanzati (per tipo, performance positiva/negativa)
+Aggiungi badge "Top Performer" / "Worst Performer"
+D. Dati
+
+Aggiornamento automatico prezzi (già commentato, da riabilitare dopo test)
+Storico prezzi con granularità diversa (giornaliero, settimanale, mensile)
+Calcolo ROI annualizzato
+E. Altre features
+
+Split/Merge investimenti
+Categorie custom di investimenti
+Tags per investimenti
+Note ricche (con allegati/link)
