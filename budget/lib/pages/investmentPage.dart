@@ -139,9 +139,9 @@ class _InvestmentPageState extends State<InvestmentPage> {
             ),
           ],
           floatingActionButton: AnimateFABDelayed(
-            fab: AddFAB(
+            fab: FAB(
               tooltip: "update-price".tr(),
-              icon: appStateSettings["outlinedIcons"]
+              iconData: appStateSettings["outlinedIcons"]
                   ? Icons.price_change_outlined
                   : Icons.price_change_rounded,
               openPage: UpdateInvestmentPricePage(investment: investment),
@@ -397,12 +397,13 @@ class _InvestmentPageState extends State<InvestmentPage> {
                                       ? "updating".tr()
                                       : "update-from-api".tr(),
                                   onTap: _isUpdatingPrice
-                                      ? null
+                                      ? () {}
                                       : () => _updatePriceFromAPI(investment),
                                   icon: _isUpdatingPrice
                                       ? null
                                       : Icons.refresh,
                                   expandedLayout: true,
+                                  disabled: _isUpdatingPrice,
                                 ),
                               ),
                               SizedBox(width: 10),
@@ -465,7 +466,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
                     ),
                     SizedBox(height: 10),
                     StreamBuilder<List<InvestmentPriceHistory>>(
-                      stream: database.watchInvestmentPriceHistory(investmentPk),
+                      stream: database.watchInvestmentPriceHistory(widget.investmentPk),
                       builder: (context, historySnapshot) {
                         if (!historySnapshot.hasData ||
                             historySnapshot.data!.isEmpty) {
@@ -538,7 +539,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
               ),
             ),
             StreamBuilder<List<InvestmentPriceHistory>>(
-              stream: database.watchInvestmentPriceHistory(investmentPk, limit: 50),
+              stream: database.watchInvestmentPriceHistory(widget.investmentPk, limit: 50),
               builder: (context, historySnapshot) {
                 if (!historySnapshot.hasData) {
                   return SliverToBoxAdapter(
