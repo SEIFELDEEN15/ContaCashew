@@ -614,11 +614,14 @@ class _InvestmentPageState extends State<InvestmentPage> {
                           end: getHorizontalPaddingConstrained(context) + 13,
                         ),
                         child: Tappable(
-                          color: getColor(context, "lightDarkAccentHeavyLight"),
+                          color: Theme.of(context).colorScheme.surface,
                           borderRadius:
-                              getPlatform() == PlatformOS.isIOS ? 0 : 12,
+                              getPlatform() == PlatformOS.isIOS ? 7 : 12,
                           child: Padding(
-                            padding: EdgeInsetsDirectional.all(15),
+                            padding: EdgeInsetsDirectional.symmetric(
+                              horizontal: 10,
+                              vertical: 10,
+                            ),
                             child: Row(
                               children: [
                                 Expanded(

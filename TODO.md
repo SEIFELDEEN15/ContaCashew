@@ -6,6 +6,8 @@ pagina investments:
 - altri migliroamenti per la pagina investimenti che faresti?
 - card total-portfolio-value non ha alrgezza ocme altre card! inoltre indica X transazioni e non X investimenti
 
+---
+
 - stile dei record della lista investimenti in pagina investimenti deve avere steso stile della lista delle transazioni in tutte le spese
 - togli debug scritta in angolo in alto a destra
 - al posto di budget\assets\icon\icon.png usa budget\assets\icon\cashtrack-ico.png come icona, anche come icona app android e ios
@@ -42,3 +44,10 @@ Split/Merge investimenti
 Categorie custom di investimenti
 Tags per investimenti
 Note ricche (con allegati/link)
+
+--
+
+budget\lib\pages\investmentsListPage.dart
+
+- il grafico a torta di budget\lib\pages\investmentsListPage.dart deve funzioanre come quello di all-spending
+- dopo che clicco per aggiungere un investimento

@@ -668,7 +668,11 @@ class InvestmentsPieChartSection extends StatelessWidget {
                   ),
                 SizedBox(height: 10),
                 // List of investment types with totals
-                ...pieChartData.map((categoryWithTotal) {
+                ...(selectedInvestmentType != null
+                        ? pieChartData.where((c) =>
+                            c.category.categoryPk == selectedInvestmentType)
+                        : pieChartData)
+                    .map((categoryWithTotal) {
                   bool isSelected = selectedInvestmentType ==
                       categoryWithTotal.category.categoryPk;
                   return Padding(
@@ -699,15 +703,25 @@ class InvestmentsPieChartSection extends StatelessWidget {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color:
-                                    HexColor(categoryWithTotal.category.colour),
-                                shape: BoxShape.circle,
+                            // Icon/Emoji
+                            if (categoryWithTotal.category.emojiIconName != null)
+                              Padding(
+                                padding: const EdgeInsetsDirectional.only(end: 8),
+                                child: TextFont(
+                                  text: categoryWithTotal.category.emojiIconName!,
+                                  fontSize: 20,
+                                ),
+                              )
+                            else
+                              Container(
+                                width: 12,
+                                height: 12,
+                                decoration: BoxDecoration(
+                                  color:
+                                      HexColor(categoryWithTotal.category.colour),
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
                             SizedBox(width: 12),
                             Expanded(
                               child: TextFont(

@@ -4,6 +4,7 @@ import 'package:budget/functions.dart';
 import 'package:budget/pages/investmentPage.dart';
 import 'package:budget/struct/investmentTypes.dart';
 import 'package:budget/struct/settings.dart';
+import 'package:budget/widgets/categoryIcon.dart';
 import 'package:budget/widgets/openBottomSheet.dart';
 import 'package:budget/widgets/openContainerNavigation.dart';
 import 'package:budget/widgets/tappable.dart';
@@ -71,19 +72,28 @@ class InvestmentEntry extends StatelessWidget {
               child: Row(
                 children: [
                   // Icon
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: getInvestmentTypeColor(investment.investmentType),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      getInvestmentTypeIcon(investment.investmentType),
-                      color: Colors.white,
-                      size: 25,
-                    ),
-                  ),
+                  investment.categoryFk != null
+                      ? CategoryIcon(
+                          categoryPk: investment.categoryFk!,
+                          size: 27,
+                          sizePadding: 23,
+                          margin: EdgeInsetsDirectional.zero,
+                          borderRadius: 10,
+                          canEditByLongPress: false,
+                        )
+                      : Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: getInvestmentTypeColor(investment.investmentType),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            getInvestmentTypeIcon(investment.investmentType),
+                            color: Colors.white,
+                            size: 25,
+                          ),
+                        ),
                   SizedBox(width: 13),
                   // Content
                   Expanded(
