@@ -756,8 +756,6 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       );
     }
 
-    Navigator.pop(context);
-
     openSnackbar(
       SnackbarMessage(
         title:
@@ -765,6 +763,8 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
         icon: Icons.check,
       ),
     );
+
+    Navigator.pop(context);
   }
 
   Future<void> _deleteInvestment() async {
