@@ -21,7 +21,6 @@ import 'package:budget/widgets/util/showDatePicker.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 class AddInvestmentPage extends StatefulWidget {
@@ -196,13 +195,17 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                   children: [
                     Expanded(
                       child: BudgetTextInput.TextInput(
-                        labelText: "symbol-ticker".tr() + " (" + "optional".tr() + ")",
+                        labelText:
+                            "symbol-ticker".tr() + " (" + "optional".tr() + ")",
                         icon: Icons.tag_outlined,
                         controller: _symbolController,
                         padding: EdgeInsetsDirectional.zero,
                       ),
                     ),
-                    if (_isEditing && InvestmentPriceService().getProviderForType(_selectedInvestmentType) != null) ...[
+                    if (_isEditing &&
+                        InvestmentPriceService()
+                                .getProviderForType(_selectedInvestmentType) !=
+                            null) ...[
                       SizedBox(width: 10),
                       Padding(
                         padding: EdgeInsetsDirectional.only(bottom: 7),
@@ -218,7 +221,8 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                             if (result == true) {
                               // Refresh symbol
                               final updated = await database
-                                  .getInvestment(widget.investment!.investmentPk)
+                                  .getInvestment(
+                                      widget.investment!.investmentPk)
                                   .first;
                               setState(() {
                                 _symbolController.text = updated.symbol ?? "";
@@ -287,8 +291,9 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                             TextFont(
                               text: type.name,
                               fontSize: 14,
-                              fontWeight:
-                                  isSelected ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               textColor: isSelected ? type.color : null,
                             ),
                           ],
@@ -514,7 +519,9 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                     if (_isEditing) SizedBox(width: 13),
                     Expanded(
                       child: Button(
-                        label: _isEditing ? "save-changes".tr() : "add-investment".tr(),
+                        label: _isEditing
+                            ? "save-changes".tr()
+                            : "add-investment".tr(),
                         onTap: _saveInvestment,
                         expandedLayout: true,
                       ),
@@ -573,13 +580,12 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
     }
 
     final companion = InvestmentsCompanion(
-      investmentPk: Value(
-        _isEditing ? widget.investment!.investmentPk : uuid.v4()
-      ),
+      investmentPk:
+          Value(_isEditing ? widget.investment!.investmentPk : uuid.v4()),
       name: Value(_nameController.text.trim()),
       symbol: Value(_symbolController.text.trim().isNotEmpty
-        ? _symbolController.text.trim().toUpperCase()
-        : null),
+          ? _symbolController.text.trim().toUpperCase()
+          : null),
       investmentType: Value(_selectedInvestmentType),
       shares: Value(_shares!),
       purchasePrice: Value(_purchasePrice!),
@@ -587,21 +593,21 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       purchaseDate: Value(_purchaseDate),
       walletFk: Value(_selectedWalletPk ?? "0"),
       categoryFk: Value(null),
-      colour: Value(getInvestmentTypeColor(_selectedInvestmentType).value.toRadixString(16).padLeft(8, '0')),
+      colour: Value(getInvestmentTypeColor(_selectedInvestmentType)
+          .value
+          .toRadixString(16)
+          .padLeft(8, '0')),
       iconName: Value(null),
       emojiIconName: Value(null),
       pinned: Value(false),
       archived: Value(false),
       order: Value(_isEditing ? widget.investment!.order : 0),
       note: Value(_noteController.text.trim().isNotEmpty
-        ? _noteController.text.trim()
-        : null),
+          ? _noteController.text.trim()
+          : null),
       dateTimeModified: Value(DateTime.now()),
-      dateCreated: Value(
-        _isEditing
-          ? widget.investment!.dateCreated
-          : DateTime.now()
-      ),
+      dateCreated:
+          Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
     );
 
     await database.createOrUpdateInvestment(
@@ -624,7 +630,8 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
 
     openSnackbar(
       SnackbarMessage(
-        title: _isEditing ? "investment-updated".tr() : "investment-created".tr(),
+        title:
+            _isEditing ? "investment-updated".tr() : "investment-created".tr(),
         icon: Icons.check,
       ),
     );

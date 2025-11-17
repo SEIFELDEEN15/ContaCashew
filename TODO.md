@@ -1,4 +1,5 @@
 pagina investimenti
+- nella pagina dettaglio invesitmento metti grafico a linea andamento nel tempo di solo quel investimento 
 
 - dopo che clicco su aggiungi investimento bottone non si chiedude la pagina ma rimane aperta anche se l'invesitmento viene creato correttmaente
 - grafico a linea usa quello di storico tutte le trasazioni, stesse funzioni

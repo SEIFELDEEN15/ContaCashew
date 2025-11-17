@@ -3,7 +3,6 @@ import 'package:budget/database/tables.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/services/investmentPriceService.dart';
 import 'package:budget/struct/databaseGlobal.dart';
-import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/framework/pageFramework.dart';
 import 'package:budget/widgets/globalSnackbar.dart';
@@ -355,8 +354,8 @@ class _LinkInvestmentTickerPageState extends State<LinkInvestmentTickerPage> {
                                     if (result.description != null &&
                                         result.description!.isNotEmpty)
                                       Padding(
-                                        padding: EdgeInsetsDirectional.only(
-                                            top: 3),
+                                        padding:
+                                            EdgeInsetsDirectional.only(top: 3),
                                         child: TextFont(
                                           text: result.description!,
                                           fontSize: 12,
@@ -375,8 +374,7 @@ class _LinkInvestmentTickerPageState extends State<LinkInvestmentTickerPage> {
                   }).toList(),
                 ],
                 // Price preview
-                if (_selectedSymbol != null &&
-                    _selectedSymbol!.isNotEmpty) ...[
+                if (_selectedSymbol != null && _selectedSymbol!.isNotEmpty) ...[
                   SizedBox(height: 20),
                   TextFont(
                     text: "price-preview".tr(),
@@ -452,8 +450,8 @@ class _LinkInvestmentTickerPageState extends State<LinkInvestmentTickerPage> {
                                         Icon(
                                           Icons.error_outline,
                                           size: 16,
-                                          color:
-                                              getColor(context, "expenseAmount"),
+                                          color: getColor(
+                                              context, "expenseAmount"),
                                         ),
                                         SizedBox(width: 5),
                                         Expanded(

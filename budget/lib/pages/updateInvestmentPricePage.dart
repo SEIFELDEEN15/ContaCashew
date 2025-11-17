@@ -14,7 +14,6 @@ import 'package:budget/widgets/textInput.dart' as BudgetTextInput;
 import 'package:budget/widgets/textWidgets.dart';
 import 'package:budget/widgets/tappable.dart';
 import 'package:budget/widgets/util/showDatePicker.dart';
-import 'package:drift/drift.dart' hide Column;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -32,8 +31,7 @@ class UpdateInvestmentPricePage extends StatefulWidget {
       _UpdateInvestmentPricePageState();
 }
 
-class _UpdateInvestmentPricePageState
-    extends State<UpdateInvestmentPricePage> {
+class _UpdateInvestmentPricePageState extends State<UpdateInvestmentPricePage> {
   late TextEditingController _noteController;
   double? _newPrice;
   DateTime _date = DateTime.now();
@@ -80,12 +78,12 @@ class _UpdateInvestmentPricePageState
 
   @override
   Widget build(BuildContext context) {
-    final currentValue = widget.investment.shares * widget.investment.currentPrice;
+    final currentValue =
+        widget.investment.shares * widget.investment.currentPrice;
     final newValue = (_newPrice ?? 0) * widget.investment.shares;
     final difference = newValue - currentValue;
-    final differencePercentage = currentValue > 0
-        ? (difference / currentValue) * 100
-        : 0;
+    final differencePercentage =
+        currentValue > 0 ? (difference / currentValue) * 100 : 0;
     final isIncrease = difference >= 0;
 
     return PageFramework(
@@ -229,7 +227,8 @@ class _UpdateInvestmentPricePageState
                   ),
                 ),
                 // Difference indicator
-                if (_newPrice != null && _newPrice != widget.investment.currentPrice)
+                if (_newPrice != null &&
+                    _newPrice != widget.investment.currentPrice)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(top: 15),
                     child: Container(
@@ -239,8 +238,10 @@ class _UpdateInvestmentPricePageState
                       ),
                       decoration: BoxDecoration(
                         color: isIncrease
-                            ? getColor(context, "incomeAmount").withOpacity(0.15)
-                            : getColor(context, "expenseAmount").withOpacity(0.15),
+                            ? getColor(context, "incomeAmount")
+                                .withOpacity(0.15)
+                            : getColor(context, "expenseAmount")
+                                .withOpacity(0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(

@@ -144,7 +144,7 @@ class PageNavigationFrameworkSafeArea extends StatelessWidget {
       children: [
         hasRightSafeArea || hasLeftSafeArea
             ? Container(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
               )
             : SizedBox.shrink(),
         hasRightSafeArea || hasLeftSafeArea
@@ -172,7 +172,7 @@ class PageNavigationFrameworkSafeArea extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: Container(
                   width: rightPaddingSafeArea,
-                  color: Theme.of(context).colorScheme.background,
+                  color: Theme.of(context).colorScheme.surface,
                 ),
               )
             : SizedBox.shrink(),
@@ -181,7 +181,7 @@ class PageNavigationFrameworkSafeArea extends StatelessWidget {
                 alignment: Alignment.centerLeft,
                 child: Container(
                   width: leftPaddingSafeArea,
-                  color: Theme.of(context).colorScheme.background,
+                  color: Theme.of(context).colorScheme.surface,
                 ),
               )
             : SizedBox.shrink(),
@@ -379,7 +379,8 @@ class PageNavigationFrameworkState extends State<PageNavigationFramework> {
         key: upcomingOverdueTransactionsStateKey,
         overdueTransactions: null), //16
     CreditDebtTransactions(key: creditDebtTransactionsKey, isCredit: null), //17
-    InvestmentsListPage(key: investmentsListPageStateKey, backButton: false), //18
+    InvestmentsListPage(
+        key: investmentsListPageStateKey, backButton: false), //18
   ];
 
   late int currentPage = widget.widthSideNavigationBar <= 0
