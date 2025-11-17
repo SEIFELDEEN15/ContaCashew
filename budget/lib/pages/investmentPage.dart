@@ -152,7 +152,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context),
+                  horizontal: getHorizontalPaddingConstrained(context) + 13,
                   vertical: 15,
                 ),
                 child: Row(
@@ -199,7 +199,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context),
+                  horizontal: getHorizontalPaddingConstrained(context) + 13,
                   vertical: 5,
                 ),
                 child: Container(
@@ -290,7 +290,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context),
+                  horizontal: getHorizontalPaddingConstrained(context) + 13,
                   vertical: 5,
                 ),
                 child: StreamBuilder<Map<String, double>>(
@@ -336,11 +336,11 @@ class _InvestmentPageState extends State<InvestmentPage> {
             ),
 
             // API Price Update Section
-            if (_priceService.getProviderForType(investment.investmentType) != null)
+            if (false) // Nascosto temporaneamente - _priceService.getProviderForType(investment.investmentType) != null
               SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsetsDirectional.symmetric(
-                    horizontal: getHorizontalPaddingConstrained(context),
+                    horizontal: getHorizontalPaddingConstrained(context) + 13,
                     vertical: 5,
                   ),
                   child: Container(
@@ -453,7 +453,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context),
+                  horizontal: getHorizontalPaddingConstrained(context) + 13,
                   vertical: 10,
                 ),
                 child: Column(
@@ -528,7 +528,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context),
+                  horizontal: getHorizontalPaddingConstrained(context) + 13,
                   vertical: 10,
                 ),
                 child: TextFont(
@@ -558,7 +558,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
                   return SliverToBoxAdapter(
                     child: Padding(
                       padding: EdgeInsetsDirectional.symmetric(
-                        horizontal: getHorizontalPaddingConstrained(context),
+                        horizontal: getHorizontalPaddingConstrained(context) + 13,
                       ),
                       child: Container(
                         padding: EdgeInsets.all(30),
@@ -600,8 +600,8 @@ class _InvestmentPageState extends State<InvestmentPage> {
                       return Padding(
                         padding: EdgeInsetsDirectional.only(
                           bottom: 7,
-                          start: getHorizontalPaddingConstrained(context),
-                          end: getHorizontalPaddingConstrained(context),
+                          start: getHorizontalPaddingConstrained(context) + 13,
+                          end: getHorizontalPaddingConstrained(context) + 13,
                         ),
                         child: Tappable(
                           color: getColor(context, "lightDarkAccentHeavyLight"),
@@ -707,7 +707,7 @@ class _InvestmentPageState extends State<InvestmentPage> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsetsDirectional.symmetric(
-                  horizontal: getHorizontalPaddingConstrained(context),
+                  horizontal: getHorizontalPaddingConstrained(context) + 13,
                   vertical: 5,
                 ),
                 child: Container(

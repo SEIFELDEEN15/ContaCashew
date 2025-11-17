@@ -108,6 +108,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
           nextLabel: "set-amount".tr(),
           enableWalletPicker: false,
           allowZero: false,
+          convertToMoney: false, // Non mostrare valuta per le azioni
         ),
       ),
     );
@@ -309,54 +310,62 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                 ),
                 SizedBox(height: 7),
                 // Symbol (optional)
-                Row(
-                  children: [
-                    Expanded(
-                      child: BudgetTextInput.TextInput(
-                        labelText:
-                            "symbol-ticker".tr() + " (" + "optional".tr() + ")",
-                        icon: Icons.tag_outlined,
-                        controller: _symbolController,
-                        padding: EdgeInsetsDirectional.zero,
-                      ),
-                    ),
-                    if (InvestmentPriceService()
-                                .getProviderForType(_selectedInvestmentType) !=
-                            null) ...[
-                      SizedBox(width: 10),
-                      Padding(
-                        padding: EdgeInsetsDirectional.only(bottom: 7),
-                        child: Button(
-                          label: "search".tr(),
-                          onTap: () async {
-                            if (_isEditing) {
-                              final result = await pushRoute(
-                                context,
-                                LinkInvestmentTickerPage(
-                                  investment: widget.investment!,
-                                ),
-                              );
-                              if (result == true) {
-                                // Refresh symbol
-                                final updated = await database
-                                    .getInvestment(
-                                        widget.investment!.investmentPk)
-                                    .first;
-                                setState(() {
-                                  _symbolController.text = updated.symbol ?? "";
-                                });
-                              }
-                            } else {
-                              // For new investments, search for symbols
-                              await _searchAndLinkSymbol();
-                            }
-                          },
-                          icon: Icons.search,
-                        ),
-                      ),
-                    ],
-                  ],
+                BudgetTextInput.TextInput(
+                  labelText:
+                      "symbol-ticker".tr() + " (" + "optional".tr() + ")",
+                  icon: Icons.tag_outlined,
+                  controller: _symbolController,
+                  padding: EdgeInsetsDirectional.zero,
                 ),
+                // Funzionalità di ricerca ticker temporaneamente nascosta
+                // Row(
+                //   children: [
+                //     Expanded(
+                //       child: BudgetTextInput.TextInput(
+                //         labelText:
+                //             "symbol-ticker".tr() + " (" + "optional".tr() + ")",
+                //         icon: Icons.tag_outlined,
+                //         controller: _symbolController,
+                //         padding: EdgeInsetsDirectional.zero,
+                //       ),
+                //     ),
+                //     if (InvestmentPriceService()
+                //                 .getProviderForType(_selectedInvestmentType) !=
+                //             null) ...[
+                //       SizedBox(width: 10),
+                //       Padding(
+                //         padding: EdgeInsetsDirectional.only(bottom: 7),
+                //         child: Button(
+                //           label: "search".tr(),
+                //           onTap: () async {
+                //             if (_isEditing) {
+                //               final result = await pushRoute(
+                //                 context,
+                //                 LinkInvestmentTickerPage(
+                //                   investment: widget.investment!,
+                //                 ),
+                //               );
+                //               if (result == true) {
+                //                 // Refresh symbol
+                //                 final updated = await database
+                //                     .getInvestment(
+                //                         widget.investment!.investmentPk)
+                //                     .first;
+                //                 setState(() {
+                //                   _symbolController.text = updated.symbol ?? "";
+                //                 });
+                //               }
+                //             } else {
+                //               // For new investments, search for symbols
+                //               await _searchAndLinkSymbol();
+                //             }
+                //           },
+                //           icon: Icons.search,
+                //         ),
+                //       ),
+                //     ],
+                //   ],
+                // ),
                 SizedBox(height: 7),
                 // Notes (optional)
                 BudgetTextInput.TextInput(

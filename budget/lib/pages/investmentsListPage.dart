@@ -341,39 +341,46 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
           final gainLoss = summary['gainLoss'] ?? 0;
           final gainLossPercentage = summary['gainLossPercentage'] ?? 0;
 
-          return Column(
-            children: [
-              TransactionsAmountBox(
-                onLongPress: () {
-                  selectPeriod();
-                },
-                label: "total-portfolio-value".tr(),
-                getTextColor: (double amount) {
-                  return getColor(context, "black");
-                },
-                absolute: false,
-                totalWithCountStream: Stream.value(
-                  TotalWithCount(
-                    total: totalValue,
-                    count: 0,
+          return StreamBuilder<List<Investment>>(
+            stream: database.watchAllInvestments(hideArchived: true),
+            builder: (context, investmentsSnapshot) {
+              final investmentCount = investmentsSnapshot.data?.length ?? 0;
+
+              return Column(
+                children: [
+                  TransactionsAmountBox(
+                    onLongPress: () {
+                      selectPeriod();
+                    },
+                    label: "total-portfolio-value".tr(),
+                    getTextColor: (double amount) {
+                      return getColor(context, "black");
+                    },
+                    absolute: false,
+                    totalWithCountStream: Stream.value(
+                      TotalWithCount(
+                        total: totalValue,
+                        count: investmentCount,
+                      ),
+                    ),
+                    textColor: getColor(context, "black"),
                   ),
-                ),
-                textColor: getColor(context, "black"),
-              ),
-              if (gainLoss != 0)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(top: 8),
-                  child: TextFont(
-                    text:
-                        "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    textColor: gainLoss >= 0
-                        ? getColor(context, "incomeAmount")
-                        : getColor(context, "expenseAmount"),
-                  ),
-                ),
-            ],
+                  if (gainLoss != 0)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(top: 8),
+                      child: TextFont(
+                        text:
+                            "${gainLoss >= 0 ? '+' : ''}${convertToMoney(Provider.of<AllWallets>(context), gainLoss)} (${gainLoss >= 0 ? '+' : ''}${gainLossPercentage.toStringAsFixed(2)}%)",
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        textColor: gainLoss >= 0
+                            ? getColor(context, "incomeAmount")
+                            : getColor(context, "expenseAmount"),
+                      ),
+                    ),
+                ],
+              );
+            },
           );
         },
       ),
