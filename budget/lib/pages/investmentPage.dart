@@ -6,7 +6,6 @@ import 'package:budget/pages/linkInvestmentTickerPage.dart';
 import 'package:budget/pages/updateInvestmentPricePage.dart';
 import 'package:budget/services/investmentPriceService.dart';
 import 'package:budget/struct/databaseGlobal.dart';
-import 'package:budget/struct/investmentTypes.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/fab.dart';
