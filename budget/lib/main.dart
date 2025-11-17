@@ -112,7 +112,7 @@ class App extends StatelessWidget {
       actions: keyboardIntents,
       themeAnimationDuration: Duration(milliseconds: 400),
       themeAnimationCurve: CustomDelayedCurve(),
-      key: ValueKey('CashewAppMain'),
+      key: ValueKey('ContaSpicciAppMain'),
       title: globalAppName,
       theme: getLightTheme(),
       darkTheme: getDarkTheme(),
