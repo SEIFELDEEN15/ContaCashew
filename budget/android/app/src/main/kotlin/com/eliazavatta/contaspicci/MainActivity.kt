@@ -1,4 +1,4 @@
-package com.eliazavatta.contaspicci
+package com.eliazavatta.CashTrack
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
