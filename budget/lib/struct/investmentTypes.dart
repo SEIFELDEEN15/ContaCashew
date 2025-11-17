@@ -67,6 +67,12 @@ List<InvestmentType> getInvestmentTypes() {
       color: Colors.grey.shade600,
       icon: Icons.more_horiz_rounded,
     ),
+    InvestmentType(
+      key: 'bank-account',
+      nameFunction: () => 'bank-accounts'.tr(),
+      color: Colors.teal.shade700,
+      icon: Icons.account_balance_rounded,
+    ),
   ];
 }
 

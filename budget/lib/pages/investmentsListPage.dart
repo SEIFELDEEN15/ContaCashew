@@ -728,25 +728,38 @@ class InvestmentsPieChartSection extends StatelessWidget {
     return StreamBuilder<List<Investment>>(
       stream: database.watchAllInvestments(hideArchived: true),
       builder: (context, investmentsSnapshot) {
-        if (!investmentsSnapshot.hasData ||
-            investmentsSnapshot.data!.isEmpty) {
-          return SliverToBoxAdapter(child: SizedBox.shrink());
-        }
+        return StreamBuilder<List<WalletWithDetails>>(
+          stream: database.watchAllWalletsWithDetails(),
+          builder: (context, walletsSnapshot) {
+            final Map<String?, double> typeTotals = {};
 
-        final investments = investmentsSnapshot.data!;
-        final Map<String?, double> typeTotals = {};
+            // Add investments
+            if (investmentsSnapshot.hasData) {
+              for (var inv in investmentsSnapshot.data!) {
+                final value = inv.shares * inv.currentPrice;
+                typeTotals[inv.investmentType] =
+                    (typeTotals[inv.investmentType] ?? 0) + value;
+              }
+            }
 
-        for (var inv in investments) {
-          final value = inv.shares * inv.currentPrice;
-          typeTotals[inv.investmentType] =
-              (typeTotals[inv.investmentType] ?? 0) + value;
-        }
+            // Add bank accounts if toggle is ON
+            bool includeAccounts =
+                appStateSettings["includeAccountsInInvestments"] ?? true;
+            if (includeAccounts && walletsSnapshot.hasData) {
+              double totalWallets = 0;
+              for (var wallet in walletsSnapshot.data!) {
+                totalWallets += wallet.totalSpent ?? 0;
+              }
+              if (totalWallets > 0) {
+                typeTotals["bank-account"] = totalWallets;
+              }
+            }
 
-        if (typeTotals.isEmpty) {
-          return SliverToBoxAdapter(child: SizedBox.shrink());
-        }
+            if (typeTotals.isEmpty) {
+              return SliverToBoxAdapter(child: SizedBox.shrink());
+            }
 
-        final total = typeTotals.values.fold<double>(0, (a, b) => a + b);
+            final total = typeTotals.values.fold<double>(0, (a, b) => a + b);
 
         // Map investment type keys to emoji icons
         String getInvestmentTypeEmoji(String? key) {
@@ -765,6 +778,8 @@ class InvestmentsPieChartSection extends StatelessWidget {
               return "💎";
             case 'mutual-fund':
               return "🥧";
+            case 'bank-account':
+              return "🏦";
             case 'other':
             default:
               return "📌";
@@ -936,6 +951,8 @@ class InvestmentsPieChartSection extends StatelessWidget {
               ],
             ),
           ),
+        );
+          },
         );
       },
     );
