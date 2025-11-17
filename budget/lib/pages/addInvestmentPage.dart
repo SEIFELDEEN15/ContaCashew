@@ -672,7 +672,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                             : "add-investment".tr(),
                         onTap: () async {
                           bool result = await _saveInvestment();
-                          if (result) popRoute(context);
+                          if (result) Navigator.pop(context);
                         },
                         expandedLayout: true,
                       ),
