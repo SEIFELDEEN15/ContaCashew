@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:budget/colors.dart';
 import 'package:budget/functions.dart';
 import 'package:budget/pages/addTransactionPage.dart';
-import 'package:budget/pages/premiumPage.dart';
 import 'package:budget/struct/settings.dart';
 import 'package:budget/widgets/button.dart';
 import 'package:budget/widgets/colorPicker.dart';
@@ -498,8 +497,7 @@ class _ColorIconCustomState extends State<ColorIconCustom> {
                       amountLight: 0.5, amountDark: 0.4, inverse: true),
                   width: 3,
                 ),
-                borderRadius:
-                    BorderRadiusDirectional.all(Radius.circular(500)),
+                borderRadius: BorderRadiusDirectional.all(Radius.circular(500)),
               )
             : BoxDecoration(
                 border: GradientBoxBorder(

@@ -1,3 +1,4 @@
+header height di default short e moneta di default euro
 togli loing googel al momento
 pagina investments:
 
