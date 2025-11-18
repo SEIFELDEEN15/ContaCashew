@@ -114,10 +114,6 @@ class MoreActionsPageState extends State<MoreActionsPage> {
           ),
         ],
         listWidgets: [
-          Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 8.0),
-            child: PremiumBanner(),
-          ),
           MorePages()
         ],
       );
@@ -252,14 +248,6 @@ class MorePages extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: SettingsContainerOpenPage(
-                    openPage: SubscriptionsPage(),
-                    title: navBarIconsData["subscriptions"]!.label.tr(),
-                    icon: navBarIconsData["subscriptions"]!.iconData,
-                    isOutlined: true,
-                  ),
-                ),
                 Expanded(
                   child: SettingsContainerOpenPage(
                     openPage:

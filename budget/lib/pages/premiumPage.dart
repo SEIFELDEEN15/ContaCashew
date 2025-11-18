@@ -715,9 +715,8 @@ showHelpRestorePopup(BuildContext context) {
 }
 
 bool hidePremiumPopup() {
-  return premiumPopupEnabled == false ||
-      appStateSettings["purchaseID"] != null ||
-      appStateSettings["previewDemo"] == true;
+  // All premium features are now unlocked
+  return true;
 }
 
 Future<bool> premiumPopupPushRoute(BuildContext context) async {
@@ -736,43 +735,19 @@ Future<bool> premiumPopupPushRoute(BuildContext context) async {
 }
 
 Future<bool> premiumPopupBudgets(BuildContext context) async {
-  if (hidePremiumPopup()) return true;
-  if ((await database.getAllBudgets()).length > 0) {
-    if (await premiumPopupPushRoute(context) == true) {
-      return true;
-    } else {
-      popRoute(context);
-      return false;
-    }
-  } else {
-    return true;
-  }
+  // All budget limits removed
+  return true;
 }
 
 Future<bool> premiumPopupObjectives(BuildContext context,
     {required ObjectiveType objectiveType}) async {
-  if (hidePremiumPopup()) return true;
-  if ((await database.getAllObjectives(objectiveType: objectiveType)).length >
-      0) {
-    if (await premiumPopupPushRoute(context) == true) {
-      return true;
-    } else {
-      popRoute(context);
-      return false;
-    }
-  } else {
-    return true;
-  }
+  // All objective limits removed
+  return true;
 }
 
 Future<bool> premiumPopupPastBudgets(BuildContext context) async {
-  if (hidePremiumPopup()) return true;
-  if (await premiumPopupPushRoute(context) == true) {
-    return true;
-  } else {
-    popRoute(context);
-    return false;
-  }
+  // All past budget access limits removed
+  return true;
 }
 
 Future premiumPopupAddTransaction(BuildContext context) async {
