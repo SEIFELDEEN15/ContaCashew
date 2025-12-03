@@ -761,7 +761,6 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       ),
     );
 
-    Navigator.pop(context);
     return true;
   }
 

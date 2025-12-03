@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -ExecutionPolicy Bypass -File:*)",
+      "Bash(flutter build:*)",
+      "Bash(powershell -Command \"Copy-Item -Path ''$env:LOCALAPPDATA\\Pub\\Cache\\hosted\\pub.dev\\flutter_charset_detector_android-1.0.0\\android\\build.gradle.bak'' -Destination ''$env:LOCALAPPDATA\\Pub\\Cache\\hosted\\pub.dev\\flutter_charset_detector_android-1.0.0\\android\\build.gradle'' -Force\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"$bak = Join-Path $env:LOCALAPPDATA ''Pub\\Cache\\hosted\\pub.dev\\flutter_charset_detector_android-1.0.0\\android\\build.gradle.bak''; $target = Join-Path $env:LOCALAPPDATA ''Pub\\Cache\\hosted\\pub.dev\\flutter_charset_detector_android-1.0.0\\android\\build.gradle''; Copy-Item -Path $bak -Destination $target -Force; Write-Output ''Restored from backup''\")",
+      "Bash(powershell -ExecutionPolicy Bypass -Command \"$file = Join-Path $env:LOCALAPPDATA ''Pub\\Cache\\hosted\\pub.dev\\flutter_charset_detector_android-1.0.0\\android\\build.gradle''; $content = Get-Content -Path $file -Raw; $utf8NoBom = New-Object System.Text.UTF8Encoding $false; [System.IO.File]::WriteAllText($file, $content, $utf8NoBom); Write-Output ''File re-saved without BOM''\")",
+      "Bash(powershell -Command \"$file = Join-Path $env:LOCALAPPDATA ''Pub\\Cache\\hosted\\pub.dev\\flutter_charset_detector_android-1.0.0\\android\\build.gradle''; Get-Content $file | Select-Object -First 50\")",
+      "Bash(dir /s /b \"c:\\Users\\zavat\\Desktop\\Progetti\\ContaCashew\")",
+      "Bash(findstr:*)",
+      "Bash(flutter clean:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
