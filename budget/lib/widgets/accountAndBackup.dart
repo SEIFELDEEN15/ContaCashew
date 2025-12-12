@@ -1540,6 +1540,9 @@ bool openBackupReminderPopupCheck(BuildContext context) {
           appStateSettings["currentUserEmail"] == "") &&
       ((appStateSettings["numLogins"] + 1) % 7 == 0) &&
       appStateSettings["canShowBackupReminderPopup"] == true) {
+    // Temporarily disabled: reminder modal for backups.
+    // If you want to re-enable in future, remove the comment block below.
+    /*
     openPopup(
       context,
       icon: MoreIcons.google_drive,
@@ -1565,6 +1568,8 @@ bool openBackupReminderPopupCheck(BuildContext context) {
       },
     );
     return true;
+    */
+    return false; // reminder disabled
   }
   return false;
 }
