@@ -401,54 +401,59 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                   fontWeight: FontWeight.bold,
                 ),
                 SizedBox(height: 10),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: getInvestmentTypes().map((type) {
-                    final isSelected = _selectedInvestmentType == type.key;
-                    return Tappable(
-                      onTap: () {
-                        setState(() {
-                          _selectedInvestmentType = type.key;
-                        });
-                      },
-                      borderRadius: 15,
-                      color: isSelected
-                          ? type.color.withOpacity(0.2)
-                          : getColor(context, "lightDarkAccentHeavyLight"),
-                      child: Container(
-                        padding: EdgeInsetsDirectional.symmetric(
-                          horizontal: 15,
-                          vertical: 12,
+                SizedBox(
+                  height: 50,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: getInvestmentTypes().length,
+                    separatorBuilder: (context, index) => SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      final type = getInvestmentTypes()[index];
+                      final isSelected = _selectedInvestmentType == type.key;
+                      return Tappable(
+                        onTap: () {
+                          setState(() {
+                            _selectedInvestmentType = type.key;
+                          });
+                        },
+                        borderRadius: 15,
+                        color: isSelected
+                            ? type.color.withOpacity(0.2)
+                            : getColor(context, "lightDarkAccentHeavyLight"),
+                        child: Container(
+                          padding: EdgeInsetsDirectional.symmetric(
+                            horizontal: 15,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            border: isSelected
+                                ? Border.all(color: type.color, width: 2)
+                                : null,
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                type.icon,
+                                size: 20,
+                                color: isSelected ? type.color : null,
+                              ),
+                              SizedBox(width: 8),
+                              TextFont(
+                                text: type.name,
+                                fontSize: 14,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                textColor: isSelected ? type.color : null,
+                              ),
+                            ],
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          border: isSelected
-                              ? Border.all(color: type.color, width: 2)
-                              : null,
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              type.icon,
-                              size: 20,
-                              color: isSelected ? type.color : null,
-                            ),
-                            SizedBox(width: 8),
-                            TextFont(
-                              text: type.name,
-                              fontSize: 14,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              textColor: isSelected ? type.color : null,
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }).toList(),
+                      );
+                    },
+                  ),
                 ),
                 SizedBox(height: 20),
                 // Shares
@@ -672,7 +677,9 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
                             : "add-investment".tr(),
                         onTap: () async {
                           bool result = await _saveInvestment();
-                          if (result) Navigator.pop(context);
+                          if (result && mounted) {
+                            popRoute(context);
+                          }
                         },
                         expandedLayout: true,
                       ),
@@ -689,79 +696,134 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
   }
 
   Future<bool> _saveInvestment() async {
-    // Validation
+    // Validation with error messages
     if (_nameController.text.trim().isEmpty) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "enter-name".tr(),
+          icon: Icons.warning,
+        ),
+      );
       return false;
     }
     if (_selectedInvestmentType == null) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "select-investment-type".tr(),
+          icon: Icons.warning,
+        ),
+      );
       return false;
     }
     if (_shares == null || _shares! <= 0) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "please-enter-shares".tr(),
+          icon: Icons.warning,
+        ),
+      );
       return false;
     }
     if (_purchasePrice == null || _purchasePrice! < 0) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "please-enter-purchase-price".tr(),
+          icon: Icons.warning,
+        ),
+      );
       return false;
     }
     if (_currentPrice == null || _currentPrice! < 0) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "please-enter-current-price".tr(),
+          icon: Icons.warning,
+        ),
+      );
       return false;
     }
 
-    final companion = InvestmentsCompanion(
-      investmentPk:
-          Value(_isEditing ? widget.investment!.investmentPk : uuid.v4()),
-      name: Value(_nameController.text.trim()),
-      symbol: Value(_symbolController.text.trim().isNotEmpty
-          ? _symbolController.text.trim().toUpperCase()
-          : null),
-      investmentType: Value(_selectedInvestmentType!),
-      shares: Value(_shares!),
-      purchasePrice: Value(_purchasePrice!),
-      currentPrice: Value(_currentPrice!),
-      purchaseDate: Value(_purchaseDate),
-      walletFk: Value(_selectedWalletPk ?? "0"),
-      categoryFk: Value(null),
-      colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
-          .value
-          .toRadixString(16)
-          .padLeft(8, '0')),
-      iconName: Value(null),
-      emojiIconName: Value(null),
-      pinned: Value(false),
-      archived: Value(false),
-      order: Value(_isEditing ? widget.investment!.order : 0),
-      note: Value(_noteController.text.trim().isNotEmpty
-          ? _noteController.text.trim()
-          : null),
-      dateTimeModified: Value(DateTime.now()),
-      dateCreated:
-          Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
-    );
+    try {
+      final companion = InvestmentsCompanion(
+        investmentPk:
+            Value(_isEditing ? widget.investment!.investmentPk : uuid.v4()),
+        name: Value(_nameController.text.trim()),
+        symbol: Value(_symbolController.text.trim().isNotEmpty
+            ? _symbolController.text.trim().toUpperCase()
+            : null),
+        investmentType: Value(_selectedInvestmentType!),
+        shares: Value(_shares!),
+        purchasePrice: Value(_purchasePrice!),
+        currentPrice: Value(_currentPrice!),
+        purchaseDate: Value(_purchaseDate),
+        walletFk: Value(_selectedWalletPk ?? "0"),
+        categoryFk: Value(null),
+        colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
+            .value
+            .toRadixString(16)
+            .padLeft(8, '0')),
+        iconName: Value(null),
+        emojiIconName: Value(null),
+        pinned: Value(false),
+        archived: Value(false),
+        order: Value(_isEditing ? widget.investment!.order : 0),
+        note: Value(_noteController.text.trim().isNotEmpty
+            ? _noteController.text.trim()
+            : null),
+        dateTimeModified: Value(DateTime.now()),
+        dateCreated:
+            Value(_isEditing ? widget.investment!.dateCreated : DateTime.now()),
+      );
 
-    await database.createOrUpdateInvestment(
-      companion,
-      insert: !_isEditing,
-    );
+      await database.createOrUpdateInvestment(
+        companion,
+        insert: !_isEditing,
+      );
 
-    if (!_isEditing) {
-      await database.addPriceHistory(
-        InvestmentPriceHistoriesCompanion.insert(
-          investmentFk: companion.investmentPk.value,
-          price: _currentPrice!,
-          date: Value(_purchaseDate),
-          note: Value("initial-purchase".tr()),
+      if (!_isEditing) {
+        try {
+          await database.addPriceHistory(
+            InvestmentPriceHistoriesCompanion.insert(
+              investmentFk: companion.investmentPk.value,
+              price: _currentPrice!,
+              date: Value(_purchaseDate),
+              note: const Value("Initial Purchase"),
+            ),
+          );
+        } catch (e, st) {
+          debugPrint('addPriceHistory failed: $e');
+          debugPrint(st.toString());
+          openSnackbar(
+            SnackbarMessage(
+              title: "error-adding-price-history".tr(),
+              description: e.toString(),
+              icon: Icons.error,
+            ),
+          );
+          // don't rethrow — the main investment was created successfully
+        }
+      }
+
+      openSnackbar(
+        SnackbarMessage(
+          title: _isEditing
+              ? "investment-updated".tr()
+              : "investment-created".tr(),
+          icon: Icons.check,
         ),
       );
+
+      return true;
+    } catch (e) {
+      openSnackbar(
+        SnackbarMessage(
+          title: "error".tr(),
+          description: e.toString(),
+          icon: Icons.error,
+        ),
+      );
+      return false;
     }
-
-    openSnackbar(
-      SnackbarMessage(
-        title:
-            _isEditing ? "investment-updated".tr() : "investment-created".tr(),
-        icon: Icons.check,
-      ),
-    );
-
-    return true;
   }
 
   Future<void> _deleteInvestment() async {

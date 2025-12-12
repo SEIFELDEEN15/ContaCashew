@@ -1,9 +1,4 @@
-Se il problema persiste, prova:
-cd budget
-flutter clean
-cd android && ./gradlew clean (o gradlew.bat clean su Windows)
-cd ..
-flutter build appbundle --release
+- togli 3 schermata di onboarding e fai c he si accede dopo la seocnda alla app
 
 - investimenti traduzioni mancanti e tasto aggiunta INVESTIMENTO non chiUde la schermata corrente
 - togli tasto login con google da onboarding E LASICA SOLO CONTINUA OFFLINE

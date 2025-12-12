@@ -467,7 +467,8 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
           List<Investment> investments = snapshot.data ?? [];
 
           // Filter by selected type if any
-          if (selectedInvestmentType != null && selectedInvestmentType != "-1") {
+          if (selectedInvestmentType != null &&
+              selectedInvestmentType != "-1") {
             investments = investments
                 .where((inv) => inv.investmentType == selectedInvestmentType)
                 .toList();
@@ -605,16 +606,10 @@ class InvestmentsListPageState extends State<InvestmentsListPage>
                       ),
                       child: Row(
                         children: [
-                          // Icon
-                          Container(
+                          // Icon (no background)
+                          SizedBox(
                             width: 50,
                             height: 50,
-                            decoration: BoxDecoration(
-                              color: HexColor(walletWithDetails.wallet.colour,
-                                  defaultColor:
-                                      Theme.of(context).colorScheme.primary),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
                             child: Center(
                               child: Text(
                                 walletWithDetails.wallet.iconName ?? "💰",
@@ -761,197 +756,202 @@ class InvestmentsPieChartSection extends StatelessWidget {
 
             final total = typeTotals.values.fold<double>(0, (a, b) => a + b);
 
-        // Map investment type keys to emoji icons
-        String getInvestmentTypeEmoji(String? key) {
-          switch (key) {
-            case 'stock':
-              return "📈";
-            case 'etf':
-              return "📊";
-            case 'crypto':
-              return "₿";
-            case 'bond':
-              return "💰";
-            case 'real-estate':
-              return "🏠";
-            case 'commodity':
-              return "💎";
-            case 'mutual-fund':
-              return "🥧";
-            case 'bank-account':
-              return "🏦";
-            case 'other':
-            default:
-              return "📌";
-          }
-        }
+            // Map investment type keys to emoji icons
+            String getInvestmentTypeEmoji(String? key) {
+              switch (key) {
+                case 'stock':
+                  return "📈";
+                case 'etf':
+                  return "📊";
+                case 'crypto':
+                  return "₿";
+                case 'bond':
+                  return "💰";
+                case 'real-estate':
+                  return "🏠";
+                case 'commodity':
+                  return "💎";
+                case 'mutual-fund':
+                  return "🥧";
+                case 'bank-account':
+                  return "🏦";
+                case 'other':
+                default:
+                  return "📌";
+              }
+            }
 
-        List<CategoryWithTotal> pieChartData = typeTotals.entries
-            .map((e) => CategoryWithTotal(
-                  category: TransactionCategory(
-                    categoryPk: e.key ?? "other",
-                    name: getInvestmentTypeName(e.key),
-                    colour: "#" +
-                        getInvestmentTypeColor(e.key)
-                            .value
-                            .toRadixString(16)
-                            .padLeft(8, '0')
-                            .substring(2),
-                    iconName: "",
-                    emojiIconName: getInvestmentTypeEmoji(e.key),
-                    dateCreated: DateTime.now(),
-                    dateTimeModified: null,
-                    order: 0,
-                    income: false,
-                  ),
-                  total: e.value,
-                ))
-            .toList();
-
-        return SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsetsDirectional.symmetric(
-              horizontal: getHorizontalPaddingConstrained(context) + 13,
-              vertical: 10,
-            ),
-            child: Column(
-              children: [
-                // Pie chart
-                SizedBox(height: 20),
-                PieChartWrapper(
-                  pieChartDisplayStateKey: pieChartDisplayStateKey,
-                  data: pieChartData,
-                  totalSpent: total,
-                  setSelectedCategory: (categoryPk, category) async {
-                    if (selectedInvestmentType == categoryPk) {
-                      onSelectedInvestmentType(null);
-                      pieChartDisplayStateKey.currentState?.setTouchedIndex(-1);
-                    } else {
-                      onSelectedInvestmentType(categoryPk);
-                    }
-                  },
-                ),
-                SizedBox(height: 10),
-                // Clear selection button
-                if (selectedInvestmentType != null &&
-                    selectedInvestmentType != "-1")
-                  Padding(
-                    padding: const EdgeInsetsDirectional.only(top: 10),
-                    child: TextButton(
-                      onPressed: () {
-                        onSelectedInvestmentType(null);
-                        pieChartDisplayStateKey.currentState
-                            ?.setTouchedIndex(-1);
-                      },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            appStateSettings["outlinedIcons"]
-                                ? Icons.clear_outlined
-                                : Icons.clear_rounded,
-                            size: 20,
-                          ),
-                          SizedBox(width: 5),
-                          TextFont(
-                            text: "clear-selection".tr(),
-                            fontSize: 14,
-                          ),
-                        ],
+            List<CategoryWithTotal> pieChartData = typeTotals.entries
+                .map((e) => CategoryWithTotal(
+                      category: TransactionCategory(
+                        categoryPk: e.key ?? "other",
+                        name: getInvestmentTypeName(e.key),
+                        colour: "#" +
+                            getInvestmentTypeColor(e.key)
+                                .value
+                                .toRadixString(16)
+                                .padLeft(8, '0')
+                                .substring(2),
+                        iconName: "",
+                        emojiIconName: getInvestmentTypeEmoji(e.key),
+                        dateCreated: DateTime.now(),
+                        dateTimeModified: null,
+                        order: 0,
+                        income: false,
                       ),
-                    ),
-                  ),
-                SizedBox(height: 10),
-                // List of investment types with totals
-                ...(selectedInvestmentType != null
-                        ? pieChartData.where((c) =>
-                            c.category.categoryPk == selectedInvestmentType)
-                        : pieChartData)
-                    .map((categoryWithTotal) {
-                  bool isSelected = selectedInvestmentType ==
-                      categoryWithTotal.category.categoryPk;
-                  return Padding(
-                    padding: const EdgeInsetsDirectional.only(bottom: 8),
-                    child: Tappable(
-                      onTap: () {
-                        if (isSelected) {
+                      total: e.value,
+                    ))
+                .toList();
+
+            return SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsetsDirectional.symmetric(
+                  horizontal: getHorizontalPaddingConstrained(context) + 13,
+                  vertical: 10,
+                ),
+                child: Column(
+                  children: [
+                    // Pie chart
+                    SizedBox(height: 20),
+                    PieChartWrapper(
+                      pieChartDisplayStateKey: pieChartDisplayStateKey,
+                      data: pieChartData,
+                      totalSpent: total,
+                      setSelectedCategory: (categoryPk, category) async {
+                        if (selectedInvestmentType == categoryPk) {
                           onSelectedInvestmentType(null);
                           pieChartDisplayStateKey.currentState
                               ?.setTouchedIndex(-1);
                         } else {
-                          onSelectedInvestmentType(
-                              categoryWithTotal.category.categoryPk);
-                          pieChartDisplayStateKey.currentState
-                              ?.setTouchedCategoryPk(
-                                  categoryWithTotal.category.categoryPk);
+                          onSelectedInvestmentType(categoryPk);
                         }
                       },
-                      color: isSelected
-                          ? HexColor(categoryWithTotal.category.colour)
-                              .withOpacity(0.2)
-                          : getColor(context, "lightDarkAccentHeavyLight"),
-                      borderRadius: getPlatform() == PlatformOS.isIOS ? 0 : 12,
-                      child: Padding(
-                        padding: EdgeInsetsDirectional.symmetric(
-                          horizontal: 15,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          children: [
-                            // Icon/Emoji
-                            if (categoryWithTotal.category.emojiIconName != null)
-                              Padding(
-                                padding: const EdgeInsetsDirectional.only(end: 8),
-                                child: TextFont(
-                                  text: categoryWithTotal.category.emojiIconName!,
-                                  fontSize: 20,
-                                ),
-                              )
-                            else
-                              Container(
-                                width: 12,
-                                height: 12,
-                                decoration: BoxDecoration(
-                                  color:
-                                      HexColor(categoryWithTotal.category.colour),
-                                  shape: BoxShape.circle,
-                                ),
+                    ),
+                    SizedBox(height: 10),
+                    // Clear selection button
+                    if (selectedInvestmentType != null &&
+                        selectedInvestmentType != "-1")
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(top: 10),
+                        child: TextButton(
+                          onPressed: () {
+                            onSelectedInvestmentType(null);
+                            pieChartDisplayStateKey.currentState
+                                ?.setTouchedIndex(-1);
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                appStateSettings["outlinedIcons"]
+                                    ? Icons.clear_outlined
+                                    : Icons.clear_rounded,
+                                size: 20,
                               ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: TextFont(
-                                text: categoryWithTotal.category.name,
-                                fontSize: 16,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                              SizedBox(width: 5),
+                              TextFont(
+                                text: "clear-selection".tr(),
+                                fontSize: 14,
                               ),
-                            ),
-                            TextFont(
-                              text: convertToMoney(
-                                Provider.of<AllWallets>(context),
-                                categoryWithTotal.total,
-                              ),
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            SizedBox(width: 8),
-                            TextFont(
-                              text: convertToPercent(
-                                  categoryWithTotal.total / total * 100),
-                              fontSize: 14,
-                              textColor: getColor(context, "textLight"),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(),
-              ],
-            ),
-          ),
-        );
+                    SizedBox(height: 10),
+                    // List of investment types with totals
+                    ...(selectedInvestmentType != null
+                            ? pieChartData.where((c) =>
+                                c.category.categoryPk == selectedInvestmentType)
+                            : pieChartData)
+                        .map((categoryWithTotal) {
+                      bool isSelected = selectedInvestmentType ==
+                          categoryWithTotal.category.categoryPk;
+                      return Padding(
+                        padding: const EdgeInsetsDirectional.only(bottom: 8),
+                        child: Tappable(
+                          onTap: () {
+                            if (isSelected) {
+                              onSelectedInvestmentType(null);
+                              pieChartDisplayStateKey.currentState
+                                  ?.setTouchedIndex(-1);
+                            } else {
+                              onSelectedInvestmentType(
+                                  categoryWithTotal.category.categoryPk);
+                              pieChartDisplayStateKey.currentState
+                                  ?.setTouchedCategoryPk(
+                                      categoryWithTotal.category.categoryPk);
+                            }
+                          },
+                          color: isSelected
+                              ? HexColor(categoryWithTotal.category.colour)
+                                  .withOpacity(0.2)
+                              : getColor(context, "lightDarkAccentHeavyLight"),
+                          borderRadius:
+                              getPlatform() == PlatformOS.isIOS ? 0 : 12,
+                          child: Padding(
+                            padding: EdgeInsetsDirectional.symmetric(
+                              horizontal: 15,
+                              vertical: 12,
+                            ),
+                            child: Row(
+                              children: [
+                                // Icon/Emoji
+                                if (categoryWithTotal.category.emojiIconName !=
+                                    null)
+                                  Padding(
+                                    padding: const EdgeInsetsDirectional.only(
+                                        end: 8),
+                                    child: TextFont(
+                                      text: categoryWithTotal
+                                          .category.emojiIconName!,
+                                      fontSize: 20,
+                                    ),
+                                  )
+                                else
+                                  Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      color: HexColor(
+                                          categoryWithTotal.category.colour),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                SizedBox(width: 12),
+                                Expanded(
+                                  child: TextFont(
+                                    text: categoryWithTotal.category.name,
+                                    fontSize: 16,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                                TextFont(
+                                  text: convertToMoney(
+                                    Provider.of<AllWallets>(context),
+                                    categoryWithTotal.total,
+                                  ),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                SizedBox(width: 8),
+                                TextFont(
+                                  text: convertToPercent(
+                                      categoryWithTotal.total / total * 100),
+                                  fontSize: 14,
+                                  textColor: getColor(context, "textLight"),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              ),
+            );
           },
         );
       },
