@@ -93,7 +93,22 @@ class AboutPageState extends State<AboutPage> {
       ],
     );
 
+    // Note: this is a modified version to add investments
+    // to this open-source project:
     List<Widget> developmentTeam = [
+      Padding(
+        padding:
+            const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 7),
+        child: Center(
+          child: TextFont(
+            text:
+                "This is a modified version to add investments to this open-source project:",
+            fontSize: 14,
+            textAlign: TextAlign.center,
+            maxLines: 5,
+          ),
+        ),
+      ),
       Padding(
         padding:
             const EdgeInsetsDirectional.symmetric(horizontal: 15, vertical: 7),

@@ -183,7 +183,7 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
     );
   }
 
-  int numPages = 3;
+  int numPages = 2;
   @override
   Widget build(BuildContext context) {
     _focusAttachment.reparent();
@@ -411,51 +411,7 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
           ),
         ],
       ),
-      OnBoardPage(
-        widgets: [
-          Container(
-            constraints: BoxConstraints(
-                maxWidth: MediaQuery.sizeOf(context).height <=
-                        MediaQuery.sizeOf(context).width
-                    ? MediaQuery.sizeOf(context).height * 0.5
-                    : 300),
-            child: imageLanding3,
-          ),
-          SizedBox(height: 15),
-          Padding(
-            padding: const EdgeInsetsDirectional.symmetric(horizontal: 25),
-            child: TextFont(
-              text: "onboarding-title-3".tr(namedArgs: {"app": globalAppName}),
-              fontWeight: FontWeight.bold,
-              textAlign: TextAlign.center,
-              fontSize: 25,
-              maxLines: 5,
-            ),
-          ),
-          SizedBox(height: 25),
-          IntrinsicWidth(
-            child: Padding(
-              padding:
-                  const EdgeInsetsDirectional.symmetric(horizontal: 8.0),
-              child: Button(
-                label: "continue-without-sign-in".tr(),
-                onTap: () {
-                  nextNavigation();
-                },
-                expandedLayout: false,
-              ),
-            ),
-          ),
-          // IntrinsicWidth(
-          //   child: Button(
-          //     label: "Let's go!",
-          //     onTap: () {
-          //       nextNavigation();
-          //     },
-          //   ),
-          // ),
-        ],
-      ),
+      // Terza pagina rimossa — ora si procede dopo la seconda
     ];
 
     if (numPages != children.length)
@@ -533,14 +489,8 @@ class OnBoardingPageBodyState extends State<OnBoardingPageBody> {
                     AnimatedBuilder(
                       animation: controller,
                       builder: (BuildContext context, Widget? child) {
-                        int currentIndex =
-                            controller.page?.round().toInt() ?? 0;
                         return AnimatedOpacity(
-                          opacity: getPlatform() == PlatformOS.isIOS
-                              ? 1
-                              : currentIndex >= children.length - 1
-                                  ? 0
-                                  : 1,
+                          opacity: 1,
                           duration: Duration(milliseconds: 200),
                           child: ButtonIcon(
                             onTap: () => nextOnBoardPage(),
