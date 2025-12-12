@@ -88,7 +88,7 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       _currentPrice = widget.investment!.currentPrice;
       _purchaseDate = widget.investment!.purchaseDate;
       _selectedWalletPk = widget.investment!.walletFk;
-      _selectedInvestmentType = widget.investment!.investmentType;
+      _selectedInvestmentType = widget.investment!.investmentType ?? 'stock';
     } else {
       _selectedWalletPk = "0";
       _selectedInvestmentType = 'stock'; // Default to stock
@@ -743,6 +743,9 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
       return false;
     }
 
+    // Assicuriamoci che investmentType non sia mai null
+    final String investmentType = _selectedInvestmentType ?? 'stock';
+
     try {
       final companion = InvestmentsCompanion(
         investmentPk:
@@ -751,14 +754,14 @@ class _AddInvestmentPageState extends State<AddInvestmentPage> {
         symbol: Value(_symbolController.text.trim().isNotEmpty
             ? _symbolController.text.trim().toUpperCase()
             : null),
-        investmentType: Value(_selectedInvestmentType!),
+        investmentType: Value(investmentType),
         shares: Value(_shares!),
         purchasePrice: Value(_purchasePrice!),
         currentPrice: Value(_currentPrice!),
         purchaseDate: Value(_purchaseDate),
         walletFk: Value(_selectedWalletPk ?? "0"),
         categoryFk: Value(null),
-        colour: Value(getInvestmentTypeColor(_selectedInvestmentType!)
+        colour: Value(getInvestmentTypeColor(investmentType)
             .value
             .toRadixString(16)
             .padLeft(8, '0')),

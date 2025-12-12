@@ -97,17 +97,16 @@ class MoreActionsPageState extends State<MoreActionsPage> {
             showButtons: true,
             keepOutFirst: true,
             items: [
-              if (appStateSettings["showFAQAndHelpLink"] == true)
-                DropdownItemMenu(
-                  id: "open-faq",
-                  label: "faq".tr(),
-                  icon: appStateSettings["outlinedIcons"]
-                      ? Icons.live_help_outlined
-                      : Icons.live_help_rounded,
-                  action: () {
-                    openUrl("https://cashewapp.web.app/faq.html");
-                  },
-                ),
+              DropdownItemMenu(
+                id: "open-about",
+                label: "about-app".tr(namedArgs: {"app": globalAppName}),
+                icon: appStateSettings["outlinedIcons"]
+                    ? Icons.info_outline
+                    : Icons.info_rounded,
+                action: () {
+                  pushRoute(context, AboutPage());
+                },
+              ),
             ],
           ),
         ],
@@ -182,14 +181,14 @@ class MorePages extends StatelessWidget {
               //     ),
               //   ),
               // ),
-              Expanded(
-                child: SettingsContainerOpenPage(
-                  openPage: AboutPage(),
-                  title: "about-app".tr(namedArgs: {"app": globalAppName}),
-                  icon: navBarIconsData["about"]!.iconData,
-                  isOutlined: true,
-                ),
-              ),
+              // Expanded(
+              //   child: SettingsContainerOpenPage(
+              //     openPage: AboutPage(),
+              //     title: "about-app".tr(namedArgs: {"app": globalAppName}),
+              //     icon: navBarIconsData["about"]!.iconData,
+              //     isOutlined: true,
+              //   ),
+              // ),
               Expanded(
                 child: Padding(
                   padding: EdgeInsetsDirectional.symmetric(
@@ -206,11 +205,11 @@ class MorePages extends StatelessWidget {
                   ),
                 ),
               ),
-            ],
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+              //   ],
+              // ),
+              // Row(
+              //   mainAxisSize: MainAxisSize.min,
+              //   children: [
               appStateSettings["showBillSplitterShortcut"] == true &&
                       hasSideNavigation == false
                   ? Expanded(

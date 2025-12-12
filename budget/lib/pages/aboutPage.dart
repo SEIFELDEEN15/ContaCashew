@@ -859,16 +859,16 @@ class AboutLinks extends StatelessWidget {
             //   icon: MoreIcons.github,
             //   text: "app-is-open-source".tr(namedArgs: {"app": globalAppName}),
             // ),
-            // const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
-            // _buildTappable(
-            //   context: context,
-            //   isExternalLink: true,
-            //   onTap: () => openUrl("https://cashewapp.web.app/faq.html"),
-            //   icon: appStateSettings["outlinedIcons"]
-            //       ? Icons.live_help_outlined
-            //       : Icons.live_help_rounded,
-            //   text: "guide-and-faq".tr(),
-            // ),
+            const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
+            _buildTappable(
+              context: context,
+              isExternalLink: true,
+              onTap: () => openUrl("https://cashewapp.web.app/faq.html"),
+              icon: appStateSettings["outlinedIcons"]
+                  ? Icons.live_help_outlined
+                  : Icons.live_help_rounded,
+              text: "guide-and-faq".tr(),
+            ),
             const HorizontalBreak(padding: EdgeInsetsDirectional.zero),
             _buildTappable(
               context: context,

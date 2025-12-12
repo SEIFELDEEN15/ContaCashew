@@ -58,3 +58,24 @@ budget\lib\pages\investmentsListPage.dart
 
 - il grafico a torta di budget\lib\pages\investmentsListPage.dart deve funzioanre come quello di all-spending
 - dopo che clicco per aggiungere un investimento
+
+- settings: actions: [
+  CustomPopupMenuButton(
+  showButtons: true,
+  keepOutFirst: true,
+  items: [
+  if (appStateSettings["showFAQAndHelpLink"] == true)
+  DropdownItemMenu(
+  id: "open-faq",
+  label: "faq".tr(),
+  icon: appStateSettings["outlinedIcons"]
+  ? Icons.live_help_outlined
+  : Icons.live_help_rounded,
+  action: () {
+  openUrl("https://cashewapp.web.app/faq.html");
+  },
+  ),
+  ],
+  ),
+  uqesto bottone faq toglilo e mettilo in pagina about budget\lib\pages\aboutPage.dart. bottone per accedere ad about spotalo in icona in altro a destra al posto di faq che abbiamo tolto
+- perche scheduled dovrebbe esser epiu largo come bottone?
