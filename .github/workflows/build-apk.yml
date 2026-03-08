@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -30,17 +30,14 @@ jobs:
           flutter clean
           flutter pub get
 
-      - name: Force Java 17 for Gradle
+      - name: Fix Java compatibility
         run: |
-          echo "org.gradle.java.home=$JAVA_HOME" >> budget/android/gradle.properties
-          echo "org.gradle.jvmargs=-Xmx4096m" >> budget/android/gradle.properties
+          sed -i 's/sourceCompatibility = JavaVersion.VERSION_21/sourceCompatibility = JavaVersion.VERSION_17/g' budget/android/app/build.gradle || true
+          sed -i 's/targetCompatibility = JavaVersion.VERSION_21/targetCompatibility = JavaVersion.VERSION_17/g' budget/android/app/build.gradle || true
 
-      - name: Patch charset detector plugin
+      - name: Increase Gradle memory
         run: |
-          FILE=$(find ~/.pub-cache -path "*flutter_charset_detector_android*/android/build.gradle" | head -n 1)
-          if ! grep -q "namespace" "$FILE"; then
-            sed -i '/android {/a\    namespace "com.example.charsetdetector"' "$FILE"
-          fi
+          echo "org.gradle.jvmargs=-Xmx4096m" >> budget/android/gradle.properties
 
       - name: Build APK
         run: |
