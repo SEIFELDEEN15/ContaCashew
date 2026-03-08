@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Java
@@ -24,18 +24,18 @@ jobs:
         with:
           channel: stable
 
+      - name: Flutter Doctor
+        run: flutter doctor
+
       - name: Install dependencies
         run: |
           cd budget
           flutter clean
           flutter pub get
 
-      - name: Patch missing namespace
+      - name: Increase Gradle memory
         run: |
-          FILE=$(find ~/.pub-cache -path "*flutter_charset_detector_android*/android/build.gradle" | head -n 1)
-          if ! grep -q "namespace" "$FILE"; then
-            sed -i '/android {/a\    namespace "com.example.flutter_charset_detector_android"' "$FILE"
-          fi
+          echo "org.gradle.jvmargs=-Xmx4096m" >> budget/android/gradle.properties
 
       - name: Build APK
         run: |
