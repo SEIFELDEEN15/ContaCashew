@@ -30,16 +30,17 @@ jobs:
           flutter clean
           flutter pub get
 
+      - name: Force Java 17 for Gradle
+        run: |
+          echo "org.gradle.java.home=$JAVA_HOME" >> budget/android/gradle.properties
+          echo "org.gradle.jvmargs=-Xmx4096m" >> budget/android/gradle.properties
+
       - name: Patch charset detector plugin
         run: |
           FILE=$(find ~/.pub-cache -path "*flutter_charset_detector_android*/android/build.gradle" | head -n 1)
           if ! grep -q "namespace" "$FILE"; then
             sed -i '/android {/a\    namespace "com.example.charsetdetector"' "$FILE"
           fi
-
-      - name: Increase Gradle memory
-        run: |
-          echo "org.gradle.jvmargs=-Xmx4096m" >> budget/android/gradle.properties
 
       - name: Build APK
         run: |
