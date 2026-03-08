@@ -24,14 +24,18 @@ jobs:
         with:
           channel: stable
 
-      - name: Flutter Doctor
-        run: flutter doctor
-
       - name: Install dependencies
         run: |
           cd budget
           flutter clean
           flutter pub get
+
+      - name: Patch charset detector plugin
+        run: |
+          FILE=$(find ~/.pub-cache -path "*flutter_charset_detector_android*/android/build.gradle" | head -n 1)
+          if ! grep -q "namespace" "$FILE"; then
+            sed -i '/android {/a\    namespace "com.example.charsetdetector"' "$FILE"
+          fi
 
       - name: Increase Gradle memory
         run: |
